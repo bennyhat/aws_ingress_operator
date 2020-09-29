@@ -78,6 +78,7 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
   import Ecto.Changeset
 
   alias AwsIngressOperator.Schemas.AvailabilityZone
+  alias AwsIngressOperator.Schemas.Listener
   alias AwsIngressOperator.Schemas.State
 
   @primary_key {:load_balancer_arn, :string, autogenerate: false}
@@ -94,6 +95,7 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
 
     embeds_one(:state, State)
     embeds_many(:availability_zones, AvailabilityZone)
+    embeds_many(:listeners, Listener)
   end
 
   @cast_fields [
