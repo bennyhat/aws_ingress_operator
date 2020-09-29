@@ -127,11 +127,93 @@ defmodule AwsIngressOperator.LoadBalancersTest do
     end
   end
   describe "get/1" do
+    test "gets the load balancer in question by name", %{default_aws_vpc: vpc} do
+      name = Faker.Person.name()
+
+      ExAws.ElasticLoadBalancingV2.create_load_balancer(
+        name,
+        [
+          schema: "internal",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        ]
+      )
+      |> ExAws.request!()
+      ExAws.ElasticLoadBalancingV2.create_load_balancer(
+        Faker.Person.name(),
+        [
+          schema: "internal",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        ]
+      )
+      |> ExAws.request!()
+
+      assert {:ok, %LoadBalancer{
+                   load_balancer_name: ^name
+                 }
+               } = LoadBalancers.get(name: name)
+    end
+    test "gets the load balancer in question by arn", %{default_aws_vpc: vpc} do
+
+      [arn] = ExAws.ElasticLoadBalancingV2.create_load_balancer(
+        Faker.Person.name(),
+        [
+          schema: "internal",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        ]
+      )
+      |> ExAws.request!()
+      |> Map.get(:body)
+      |> SweetXml.xpath(~x"//LoadBalancerArn/text()"ls)
+
+      ExAws.ElasticLoadBalancingV2.create_load_balancer(
+        Faker.Person.name(),
+        [
+          schema: "internal",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        ]
+      )
+      |> ExAws.request!()
+
+      assert {:ok, %LoadBalancer{
+                 load_balancer_arn: ^arn
+              }
+      } = LoadBalancers.get(arn: arn)
+    end
   end
-  describe "insert/1" do
-  end
-  describe "update/1" do
+  describe "create/1" do
+    test "given a load balancer that doesn't exist, creates it", %{default_aws_vpc: vpc} do
+      name = Faker.Person.name()
+
+      assert {:ok, %LoadBalancer{
+                 load_balancer_name: ^name
+              }} = LoadBalancers.create(
+        name: name,
+        schema: "internet-facing",
+        subnets: [vpc.subnet.id],
+        security_groups: [vpc.security_group.id]
+      )
+    end
   end
   describe "delete/1" do
+    test "given a load balancer that exists, deletes it", %{default_aws_vpc: vpc} do
+      [arn] = ExAws.ElasticLoadBalancingV2.create_load_balancer(
+        Faker.Person.name(),
+        [
+          schema: "internal",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        ]
+      )
+      |> ExAws.request!()
+      |> Map.get(:body)
+      |> SweetXml.xpath(~x"//LoadBalancerArn/text()"ls)
+
+      assert :ok = LoadBalancers.delete(arn: arn)
+      assert {:ok, []} == LoadBalancers.list()
+    end
   end
 end
