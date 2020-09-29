@@ -11,6 +11,18 @@ defmodule AwsIngressOperator.Schemas.AvailabilityZone do
   end
 
   use Accessible
+
+  @cast_fields [
+    :zone_name,
+    :subnet_id
+  ]
+
+  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def changeset(original, changes) do
+    original
+    |> cast(changes, @cast_fields)
+    |> cast_embed(:load_balancer_addresses)
+  end
 end
 
 defmodule AwsIngressOperator.Schemas.Address do
@@ -24,6 +36,18 @@ defmodule AwsIngressOperator.Schemas.Address do
   end
 
   use Accessible
+
+  @cast_fields [
+    :allocation_id,
+    :ip_address,
+    :private_ipv4_address
+  ]
+
+  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def changeset(original, changes) do
+    original
+    |> cast(changes, @cast_fields)
+  end
 end
 
 defmodule AwsIngressOperator.Schemas.State do
@@ -36,6 +60,17 @@ defmodule AwsIngressOperator.Schemas.State do
   end
 
   use Accessible
+
+  @cast_fields [
+    :code,
+    :reason
+  ]
+
+  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def changeset(original, changes) do
+    original
+    |> cast(changes, @cast_fields)
+  end
 end
 
 defmodule AwsIngressOperator.Schemas.LoadBalancer do
@@ -55,17 +90,32 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
     field(:scheme, :string)
     field(:type, :string)
     field(:vpc_id, :string)
+    field(:security_groups, {:array, :string})
 
     embeds_one(:state, State)
     embeds_many(:availability_zones, AvailabilityZone)
-    embeds_many(:security_groups, :string)
   end
+
+  @cast_fields [
+    :load_balancer_arn,
+    :load_balancer_name,
+    :canonical_hosted_zone_id,
+    :created_time,
+    :dns_name,
+    :ip_address_type,
+    :scheme,
+    :type,
+    :vpc_id,
+    :security_groups
+  ]
 
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
   def changeset(original, changes) do
     original
-    |> cast(changes, [:load_balancer_arn, :load_balancer_name])
+    |> cast(changes, @cast_fields)
+    |> cast_embed(:availability_zones)
+    |> cast_embed(:state)
   end
 end
