@@ -31,14 +31,14 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
     {vpc_id, subnet_id, security_group_id, random_address} = default_network_details()
 
     [
-      default_aws_network: %{
-        vpc_id: vpc_id,
+      default_aws_vpc: %{
+        id: vpc_id,
         subnet: %{
-          subnet_id: subnet_id,
+          id: subnet_id,
           random_address: random_address
         },
         security_group: %{
-          security_group_id: security_group_id
+          id: security_group_id
         }
       }
     ]

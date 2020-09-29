@@ -20,13 +20,16 @@ defmodule AwsIngressOperator.MixProject do
 
   defp deps do
     [
-      {:k8s, "~> 0.4"},
+      {:accessible, "~> 0.2.1"},
+      {:ecto, "~> 3.3.4"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_ec2, "~> 2.0"},
       {:ex_aws_elastic_load_balancing, "~> 2.0"},
+      {:k8s, "~> 0.4"},
       {:checkov, "~> 1.0", only: :test},
       {:divo, "~> 1.1", only: :test},
       {:divo_moto, "~> 0.1.0", only: :test},
+      {:faker, "~> 0.13", only: :test},
       {:netaddr_ex, "~> 1.2", only: :test},
       {:sweet_xml, "~> 0.6", only: :test},
       {:tesla, "~> 1.3.0", only: :test},
