@@ -1,6 +1,8 @@
 # AwsIngressOperator
 
-**TODO: Add description**
+### NOT READY YET
+
+This is a tactical attempt at getting a single ALB ingress operator in place using the high availablitiy of an elixir operator in k8s.
 
 ## Installation
 
