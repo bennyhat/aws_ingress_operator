@@ -51,7 +51,8 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
         vpc_id: vpc_id,
         cidr_block: cidr_block
       }
-    ] = ExAws.EC2.describe_subnets(filters: ["availability-zone": [az]])
+    ] =
+      ExAws.EC2.describe_subnets(filters: ["availability-zone": [az]])
       |> ExAws.request!()
       |> Map.get(:body)
       |> SweetXml.xpath(
@@ -65,13 +66,14 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
       %{
         group_id: security_group_id
       }
-    ] = ExAws.EC2.describe_security_groups(filters: ["vpc-id": [vpc_id]])
+    ] =
+      ExAws.EC2.describe_security_groups(filters: ["vpc-id": [vpc_id]])
       |> ExAws.request!()
       |> Map.get(:body)
       |> SweetXml.xpath(
-      ~x"/DescribeSecurityGroupsResponse/securityGroupInfo/item"l,
-      group_id: ~x"./groupId/text()"s
-    )
+        ~x"/DescribeSecurityGroupsResponse/securityGroupInfo/item"l,
+        group_id: ~x"./groupId/text()"s
+      )
 
     random_address = random_address_in_block(cidr_block)
 

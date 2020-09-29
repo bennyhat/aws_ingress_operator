@@ -6,8 +6,8 @@ defmodule AwsIngressOperator.Schemas.AvailabilityZone do
 
   @primary_key {:zone_name, :string, autogenerate: false}
   embedded_schema do
-    field :subnet_id, :string
-    embeds_many :load_balancer_addresses, Address
+    field(:subnet_id, :string)
+    embeds_many(:load_balancer_addresses, Address)
   end
 
   use Accessible
@@ -18,6 +18,7 @@ defmodule AwsIngressOperator.Schemas.AvailabilityZone do
   ]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
+
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
@@ -31,8 +32,8 @@ defmodule AwsIngressOperator.Schemas.Address do
 
   @primary_key {:allocation_id, :string, autogenerate: false}
   embedded_schema do
-    field :ip_address, :string
-    field :private_ipv4_address, :string
+    field(:ip_address, :string)
+    field(:private_ipv4_address, :string)
   end
 
   use Accessible
@@ -44,6 +45,7 @@ defmodule AwsIngressOperator.Schemas.Address do
   ]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
+
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
@@ -56,7 +58,7 @@ defmodule AwsIngressOperator.Schemas.State do
 
   @primary_key {:code, :string, autogenerate: false}
   embedded_schema do
-    field :reason, :string
+    field(:reason, :string)
   end
 
   use Accessible
@@ -67,6 +69,7 @@ defmodule AwsIngressOperator.Schemas.State do
   ]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
+
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
@@ -114,6 +117,7 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
+
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)

@@ -8,7 +8,7 @@ defmodule AwsIngressOperator.MixProject do
       elixir: "~> 1.10",
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      elixirc_paths: elixirc_paths(Mix.env()),
+      elixirc_paths: elixirc_paths(Mix.env())
     ]
   end
 
@@ -32,7 +32,7 @@ defmodule AwsIngressOperator.MixProject do
       {:faker, "~> 0.13", only: :test},
       {:netaddr_ex, "~> 1.2", only: :test},
       {:sweet_xml, "~> 0.6", only: :test},
-      {:tesla, "~> 1.3.0", only: :test},
+      {:tesla, "~> 1.3.0", only: :test}
     ]
   end
 

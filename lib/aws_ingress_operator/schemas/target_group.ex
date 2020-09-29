@@ -3,8 +3,8 @@ defmodule AwsIngressOperator.Schemas.TargetGroup.Tuple do
   import Ecto.Changeset
 
   embedded_schema do
-    field :target_group_arn, :string
-    field :weight, :integer
+    field(:target_group_arn, :string)
+    field(:weight, :integer)
   end
 
   @cast_fields [
@@ -15,6 +15,7 @@ defmodule AwsIngressOperator.Schemas.TargetGroup.Tuple do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
+
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
@@ -26,8 +27,8 @@ defmodule AwsIngressOperator.Schemas.TargetGroup.StickinessConfig do
   import Ecto.Changeset
 
   embedded_schema do
-    field :duration_seconds, :integer
-    field :enabled, :boolean
+    field(:duration_seconds, :integer)
+    field(:enabled, :boolean)
   end
 
   @cast_fields [
@@ -38,6 +39,7 @@ defmodule AwsIngressOperator.Schemas.TargetGroup.StickinessConfig do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
+
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)

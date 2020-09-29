@@ -17,16 +17,18 @@ defmodule AwsIngressOperator.LoadBalancers do
   }
 
   def list(opts \\ []) do
-    aliased_opts = Enum.map(opts, fn {k, v} ->
-      {Map.get(@option_aliases, k), List.wrap(v)}
-    end)
-    |> Keyword.new()
+    aliased_opts =
+      Enum.map(opts, fn {k, v} ->
+        {Map.get(@option_aliases, k), List.wrap(v)}
+      end)
+      |> Keyword.new()
 
-    load_balancers = ExAws.ElasticLoadBalancingV2.describe_load_balancers(aliased_opts)
-    |> ExAws.request!()
-    |> get_in([:body, :load_balancers])
-    |> Enum.map(&LoadBalancer.changeset/1)
-    |> Enum.map(&Ecto.Changeset.apply_changes/1)
+    load_balancers =
+      ExAws.ElasticLoadBalancingV2.describe_load_balancers(aliased_opts)
+      |> ExAws.request!()
+      |> get_in([:body, :load_balancers])
+      |> Enum.map(&LoadBalancer.changeset/1)
+      |> Enum.map(&Ecto.Changeset.apply_changes/1)
 
     {:ok, load_balancers}
   end
@@ -49,10 +51,11 @@ defmodule AwsIngressOperator.LoadBalancers do
   end
 
   def delete(opts \\ []) do
-    aliased_opts = Enum.map(opts, fn {k, v} ->
-      {Map.get(@option_aliases, k), List.wrap(v)}
-    end)
-    |> Keyword.new()
+    aliased_opts =
+      Enum.map(opts, fn {k, v} ->
+        {Map.get(@option_aliases, k), List.wrap(v)}
+      end)
+      |> Keyword.new()
 
     [arn] = Keyword.fetch!(aliased_opts, :load_balancer_arns)
 
