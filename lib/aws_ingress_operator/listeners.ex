@@ -7,19 +7,21 @@ defmodule AwsIngressOperator.Listeners do
   alias AwsIngressOperator.Schemas.Listener
 
   @option_aliases %{
-    load_balancer_arns: :load_balancer_arns,
-    load_balancer_arn: :load_balancer_arns,
-    arns: :load_balancer_arns,
-    arn: :load_balancer_arns,
-    load_balancer_names: :names,
-    load_balancer_name: :names,
-    name: :names,
-    names: :names
+    load_balancer_arn: :load_balancer_arn,
+    arn: :listener_arns,
+    arns: :listener_arns,
+    listener_arns: :listener_arns,
   }
 
   def list(opts \\ []) do
+    aliased_opts =
+      Enum.map(opts, fn {k, v} ->
+        {Map.get(@option_aliases, k), List.wrap(v)}
+      end)
+      |> Keyword.new()
+
     listeners =
-      ExAws.ElasticLoadBalancingV2.describe_listeners(opts)
+      ExAws.ElasticLoadBalancingV2.describe_listeners(aliased_opts)
       |> ExAws.request!()
       |> Map.get(:body)
       |> xpath(~x"//Listeners/member"l,
@@ -107,5 +109,11 @@ defmodule AwsIngressOperator.Listeners do
       |> Enum.map(&Ecto.Changeset.apply_changes/1)
 
     {:ok, listeners}
+  end
+
+  def get(opts \\ []) do
+    {:ok, [listener]} = list(opts)
+
+    {:ok, listener}
   end
 end
