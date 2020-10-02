@@ -31,18 +31,20 @@ defmodule AwsIngressOperator.ListenersTest do
 
       lb_arn = load_balancer.load_balancer_arn
 
-      ExAws.ElasticLoadBalancingV2.create_listener(
-        lb_arn,
-        "HTTP",
-        80,
-        [%{type: "forward", target_group_arn: target_group_arn}]
+      {:ok, %{listener_arn: arn}} = Listeners.insert_or_update(
+        %Listener{
+          load_balancer_arn: lb_arn,
+          protocol: "HTTP",
+          port: 80,
+          default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
+        }
       )
-      |> ExAws.request!()
 
       assert {:ok,
               [
                 %Listener{
-                  load_balancer_arn: ^lb_arn
+                  load_balancer_arn: ^lb_arn,
+                  listener_arn: ^arn
                 }
               ]} = Listeners.list(load_balancer_arn: lb_arn)
     end
@@ -67,26 +69,25 @@ defmodule AwsIngressOperator.ListenersTest do
 
       lb_arn = load_balancer.load_balancer_arn
 
-      [arn] = ExAws.ElasticLoadBalancingV2.create_listener(
-        lb_arn,
-        "HTTP",
-        80,
-        [%{type: "forward", target_group_arn: target_group_arn}]
+      {:ok, %{listener_arn: arn}} = Listeners.insert_or_update(
+        %Listener{
+          load_balancer_arn: lb_arn,
+          protocol: "HTTP",
+          port: 80,
+          default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
+        }
       )
-      |> ExAws.request!()
-      |> Map.get(:body)
-      |> SweetXml.xpath(~x"//ListenerArn/text()"ls)
 
-      ExAws.ElasticLoadBalancingV2.create_listener(
-        lb_arn,
-        "HTTP",
-        81,
-        [%{type: "forward", target_group_arn: target_group_arn}]
+      Listeners.insert_or_update(
+        %Listener{
+          load_balancer_arn: lb_arn,
+          protocol: "HTTP",
+          port: 80,
+          default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
+        }
       )
-      |> ExAws.request!()
 
-      assert {:ok,
-              [
+      assert {:ok, [
                 %Listener{
                   listener_arn: ^arn
                 }
@@ -115,23 +116,23 @@ defmodule AwsIngressOperator.ListenersTest do
 
       lb_arn = load_balancer.load_balancer_arn
 
-      ExAws.ElasticLoadBalancingV2.create_listener(
-        lb_arn,
-        "HTTP",
-        80,
-        [%{type: "forward", target_group_arn: target_group_arn}]
+      Listeners.insert_or_update(
+        %Listener{
+          load_balancer_arn: lb_arn,
+          protocol: "HTTP",
+          port: 80,
+          default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
+        }
       )
-      |> ExAws.request!()
 
-      [arn] = ExAws.ElasticLoadBalancingV2.create_listener(
-        lb_arn,
-        "HTTP",
-        80,
-        [%{type: "forward", target_group_arn: target_group_arn}]
+      {:ok, %{listener_arn: arn}} = Listeners.insert_or_update(
+        %Listener{
+          load_balancer_arn: lb_arn,
+          protocol: "HTTP",
+          port: 80,
+          default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
+        }
       )
-      |> ExAws.request!()
-      |> Map.get(:body)
-      |> SweetXml.xpath(~x"//ListenerArn/text()"ls)
 
       assert {:ok, %Listener{listener_arn: ^arn}} = Listeners.get(arn: arn)
     end
@@ -225,15 +226,14 @@ defmodule AwsIngressOperator.ListenersTest do
 
       lb_arn = load_balancer.load_balancer_arn
 
-      [arn] = ExAws.ElasticLoadBalancingV2.create_listener(
-        lb_arn,
-        "HTTP",
-        80,
-        [%{type: "forward", target_group_arn: target_group_arn}]
+      {:ok, %{listener_arn: arn}} = Listeners.insert_or_update(
+        %Listener{
+          load_balancer_arn: lb_arn,
+          protocol: "HTTP",
+          port: 80,
+          default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
+        }
       )
-      |> ExAws.request!()
-      |> Map.get(:body)
-      |> SweetXml.xpath(~x"//ListenerArn/text()"ls)
 
       %{"CertificateArn" => certificate_arn} = ExAws.ACM.request_certificate("helloworld.example.com", validation_method: "DNS")
       |> ExAws.request!()
@@ -256,5 +256,39 @@ defmodule AwsIngressOperator.ListenersTest do
   end
 
   describe "delete/1" do
+    test "given a listener that exists, deletes it", %{default_aws_vpc: vpc} do
+      {:ok, load_balancer} =
+        LoadBalancers.create(
+          name: Faker.Person.name(),
+          schema: "internet-facing",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        )
+
+      [target_group_arn] =
+        ExAws.ElasticLoadBalancingV2.create_target_group(
+          Faker.Person.first_name(),
+          vpc.id
+        )
+        |> ExAws.request!()
+        |> Map.get(:body)
+        |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
+
+      lb_arn = load_balancer.load_balancer_arn
+
+      {:ok, %{listener_arn: arn}} = Listeners.insert_or_update(
+        %Listener{
+          load_balancer_arn: lb_arn,
+          protocol: "HTTP",
+          port: 80,
+          default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
+        }
+      )
+
+      assert :ok = Listeners.delete(%Listener{
+        listener_arn: arn
+      })
+      assert {:ok, []} == Listeners.list(load_balancer_arn: lb_arn)
+    end
   end
 end

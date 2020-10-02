@@ -177,4 +177,11 @@ defmodule AwsIngressOperator.Listeners do
 
     get(arn: existing_listener.listener_arn)
   end
+
+  def delete(listener) do
+    ExAws.ElasticLoadBalancingV2.delete_listener(listener.listener_arn)
+    |> ExAws.request!()
+
+    :ok
+  end
 end
