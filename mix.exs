@@ -23,6 +23,7 @@ defmodule AwsIngressOperator.MixProject do
       {:accessible, "~> 0.2.1"},
       {:ecto, "~> 3.3.4"},
       {:ex_aws, "~> 2.1"},
+      {:ex_aws_acm, "~> 1.0"},
       {:ex_aws_ec2, "~> 2.0"},
       {:ex_aws_elastic_load_balancing, "~> 2.0"},
       {:k8s, "~> 0.4"},
@@ -36,6 +37,6 @@ defmodule AwsIngressOperator.MixProject do
     ]
   end
 
-  defp elixirc_paths(env) when env in [:test], do: ["lib", "test/support"]
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 end

@@ -7,24 +7,40 @@ defmodule AwsIngressOperator.Listeners do
   alias AwsIngressOperator.Schemas.Listener
 
   @option_aliases %{
-    load_balancer_arn: :load_balancer_arn,
-    arn: :listener_arns,
-    arns: :listener_arns,
-    listener_arns: :listener_arns,
+    load_balancer_arn: %{
+      name: :load_balancer_arn,
+      list: false
+    },
+    arn: %{
+      name: :listener_arns,
+      list: true
+    },
+    arns: %{
+      name: :listener_arns,
+      list: true
+    },
+    listener_arns: %{
+      name: :listener_arns,
+      list: true
+    }
   }
 
-  def list(opts \\ []) do
-    aliased_opts =
-      Enum.map(opts, fn {k, v} ->
-        {Map.get(@option_aliases, k), List.wrap(v)}
-      end)
-      |> Keyword.new()
+  defp alias_options(opts) do
+    Enum.map(opts, fn {k, v} ->
+      case Map.get(@option_aliases, k) do
+        %{name: name, list: true} -> {name, List.wrap(v)}
+        %{name: name, list: false} -> {name, v}
+      end
+    end)
+  end
 
+  def list(opts \\ []) do
+    opts = alias_options(opts)
+
+    case ExAws.ElasticLoadBalancingV2.describe_listeners(opts) |> ExAws.request() do
+        {:ok, %{body: body}} ->
     listeners =
-      ExAws.ElasticLoadBalancingV2.describe_listeners(aliased_opts)
-      |> ExAws.request!()
-      |> Map.get(:body)
-      |> xpath(~x"//Listeners/member"l,
+      xpath(body, ~x"//Listeners/member"l,
         certificates: [
           ~x"./Certificates/member"l,
           certificate_arn: ~x"./CertificateArn/text()"s,
@@ -109,11 +125,56 @@ defmodule AwsIngressOperator.Listeners do
       |> Enum.map(&Ecto.Changeset.apply_changes/1)
 
     {:ok, listeners}
+        error -> error
+    end
+
   end
 
   def get(opts \\ []) do
-    {:ok, [listener]} = list(opts)
+    case list(opts) do
+      {:ok, [listener]} -> {:ok, listener}
+      error -> error
+    end
+  end
 
-    {:ok, listener}
+  def insert_or_update(listener) do
+    case Map.get(listener, :listener_arn) do
+      nil -> insert(listener)
+      arn ->
+        case get(arn: arn) do
+          {:ok, existing_listener} -> update(existing_listener, listener)
+          {:error, _} -> {:error, :listener_not_found}
+        end
+    end
+  end
+
+  defp insert(listener) do
+    [arn] = ExAws.ElasticLoadBalancingV2.create_listener(
+      listener.load_balancer_arn,
+      listener.protocol,
+      listener.port,
+      listener.default_actions
+    )
+    |> ExAws.request!()
+    |> Map.get(:body)
+    |> SweetXml.xpath(~x"//ListenerArn/text()"ls)
+
+    get(arn: arn)
+  end
+
+  defp update(existing_listener, updated_listener) do
+    ExAws.ElasticLoadBalancingV2.modify_listener(
+      existing_listener.listener_arn, [
+        protocol: updated_listener.protocol,
+        port: updated_listener.port,
+        default_actions: updated_listener.default_actions,
+        ssl_policy: updated_listener.ssl_policy,
+        certificates: updated_listener.certificates
+      ]
+    )
+    |> ExAws.request!()
+    |> Map.get(:body)
+
+    get(arn: existing_listener.listener_arn)
   end
 end

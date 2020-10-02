@@ -28,4 +28,9 @@ config :ex_aws,
     scheme: "http://",
     host: "localhost",
     port: port
+  ],
+  acm: [
+    scheme: "http://",
+    host: "localhost",
+    port: port
   ]
