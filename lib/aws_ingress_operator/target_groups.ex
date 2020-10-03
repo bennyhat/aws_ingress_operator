@@ -61,12 +61,12 @@ defmodule AwsIngressOperator.TargetGroups do
 
   end
 
-  # def get(opts \\ []) do
-  #   case list(opts) do
-  #     {:ok, [listener]} -> {:ok, listener}
-  #     error -> error
-  #   end
-  # end
+  def get(opts \\ []) do
+    case list(opts) do
+      {:ok, [target_group]} -> {:ok, target_group}
+      error -> error
+    end
+  end
 
   # def insert_or_update(listener) do
   #   case Map.get(listener, :listener_arn) do
