@@ -12,15 +12,27 @@ defmodule AwsIngressOperator.TargetGroups do
       list: false
     },
     arn: %{
-      name: :listener_arns,
+      name: :target_group_arns,
       list: true
     },
     arns: %{
-      name: :listener_arns,
+      name: :target_group_arns,
       list: true
     },
-    listener_arns: %{
-      name: :listener_arns,
+    target_group_arns: %{
+      name: :target_group_arns,
+      list: true
+    },
+    name: %{
+      name: :names,
+      list: true
+    },
+    names: %{
+      name: :names,
+      list: true
+    },
+    target_group_name: %{
+      name: :names,
       list: true
     }
   }

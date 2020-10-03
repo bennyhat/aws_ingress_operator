@@ -5,9 +5,10 @@ defmodule AwsIngressOperator.TargetGroupsTest do
   use AwsIngressOperator.Test.Support.MotoCase, url: "http://localhost:5000"
 
   alias AwsIngressOperator.TargetGroups
+  alias AwsIngressOperator.Listeners
+  alias AwsIngressOperator.LoadBalancers
+  alias AwsIngressOperator.Schemas.Listener
   alias AwsIngressOperator.Schemas.TargetGroup
-  alias AwsIngressOperator.Schemas.Action
-  alias AwsIngressOperator.Schemas.Certificate
 
   describe "list/1" do
     test "given some target groups, returns list of them", %{default_aws_vpc: vpc} do
@@ -18,50 +19,75 @@ defmodule AwsIngressOperator.TargetGroupsTest do
       assert {:ok, [%TargetGroup{target_group_name: ^name}]} = TargetGroups.list()
     end
 
-    # test "given some listeners, returns list of them by listener arn", %{default_aws_vpc: vpc} do
-    #   {:ok, load_balancer} =
-    #     LoadBalancers.create(
-    #       name: Faker.Person.name(),
-    #       schema: "internet-facing",
-    #       subnets: [vpc.subnet.id],
-    #       security_groups: [vpc.security_group.id]
-    #     )
+    test "given some target groups, returns list of them by arn", %{default_aws_vpc: vpc} do
+      name = Faker.Person.first_name()
+      [arn] = ExAws.ElasticLoadBalancingV2.create_target_group(name, vpc.id)
+      |> ExAws.request!()
+      |> Map.get(:body)
+      |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
 
-    #   [target_group_arn] =
-    #     ExAws.ElasticLoadBalancingV2.create_target_group(
-    #       Faker.Person.first_name(),
-    #       vpc.id
-    #     )
-    #     |> ExAws.request!()
-    #     |> Map.get(:body)
-    #     |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
+      ExAws.ElasticLoadBalancingV2.create_target_group(Faker.Person.first_name(), vpc.id)
+      |> ExAws.request!()
 
-    #   lb_arn = load_balancer.load_balancer_arn
+      assert {:ok, [
+                %TargetGroup{
+                  target_group_arn: ^arn
+                }
+              ]} = TargetGroups.list(arns: [arn])
+    end
 
-    #   {:ok, %{listener_arn: arn}} = TargetGroups.insert_or_update(
-    #     %Listener{
-    #       load_balancer_arn: lb_arn,
-    #       protocol: "HTTP",
-    #       port: 80,
-    #       default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
-    #     }
-    #   )
+    test "given some target groups, returns list of them by name", %{default_aws_vpc: vpc} do
+      name = Faker.Person.first_name()
+      ExAws.ElasticLoadBalancingV2.create_target_group(name, vpc.id)
+      |> ExAws.request!()
 
-    #   TargetGroups.insert_or_update(
-    #     %Listener{
-    #       load_balancer_arn: lb_arn,
-    #       protocol: "HTTP",
-    #       port: 80,
-    #       default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
-    #     }
-    #   )
+      ExAws.ElasticLoadBalancingV2.create_target_group(Faker.Person.first_name(), vpc.id)
+      |> ExAws.request!()
 
-    #   assert {:ok, [
-    #             %Listener{
-    #               listener_arn: ^arn
-    #             }
-    #           ]} = TargetGroups.list(listener_arns: [arn])
-    # end
+      assert {:ok, [
+                 %TargetGroup{
+                   target_group_name: ^name
+                 }
+               ]} = TargetGroups.list(names: [name])
+    end
+
+    test "given some target groups, returns list of them by load balancer arn", %{default_aws_vpc: vpc} do
+      {:ok, load_balancer} =
+        LoadBalancers.create(
+          name: Faker.Person.name(),
+          schema: "internet-facing",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        )
+
+      [target_group_arn] =
+        ExAws.ElasticLoadBalancingV2.create_target_group(
+          Faker.Person.first_name(),
+          vpc.id
+        )
+        |> ExAws.request!()
+        |> Map.get(:body)
+        |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
+
+      ExAws.ElasticLoadBalancingV2.create_target_group(Faker.Person.first_name(), vpc.id)
+
+      lb_arn = load_balancer.load_balancer_arn
+
+      Listeners.insert_or_update(
+        %Listener{
+          load_balancer_arn: lb_arn,
+          protocol: "HTTP",
+          port: 80,
+          default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
+        }
+      )
+
+      assert {:ok, [
+                 %TargetGroup{
+                   target_group_arn: ^target_group_arn
+                 }
+               ]} = TargetGroups.list(load_balancer_arn: lb_arn)
+    end
   end
 
   # describe "get/1" do
