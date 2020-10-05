@@ -8,6 +8,7 @@ defmodule AwsIngressOperator.TargetGroupsTest do
   alias AwsIngressOperator.Listeners
   alias AwsIngressOperator.LoadBalancers
   alias AwsIngressOperator.Schemas.Listener
+  alias AwsIngressOperator.Schemas.Matcher
   alias AwsIngressOperator.Schemas.TargetGroup
 
   describe "list/1" do
@@ -123,122 +124,58 @@ defmodule AwsIngressOperator.TargetGroupsTest do
     end
   end
 
-  # describe "insert_or_update/1" do
-  #   test "given a non-existent listener, it creates one", %{default_aws_vpc: vpc} do
-  #     {:ok, load_balancer} =
-  #       LoadBalancers.create(
-  #         name: Faker.Person.name(),
-  #         schema: "internet-facing",
-  #         subnets: [vpc.subnet.id],
-  #         security_groups: [vpc.security_group.id]
-  #       )
+  describe "insert_or_update/1" do
+    test "given a non-existent target group, it creates one", %{default_aws_vpc: vpc} do
+      assert {:ok, %TargetGroup{target_group_arn: _arn}} = TargetGroups.insert_or_update(%TargetGroup{target_group_name: Faker.Person.first_name, vpc_id: vpc.id})
+    end
 
-  #     [target_group_arn] =
-  #       ExAws.ElasticLoadBalancingV2.create_target_group(
-  #         Faker.Person.first_name(),
-  #         vpc.id
-  #       )
-  #       |> ExAws.request!()
-  #       |> Map.get(:body)
-  #       |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
+    test "given a non-existent target group, with an arn provided it fails", %{default_aws_vpc: vpc} do
+      assert {:error, :resource_not_found} = TargetGroups.insert_or_update(
+        %TargetGroup{
+          target_group_arn: "not_there",
+          target_group_name: Faker.Person.first_name,
+          vpc_id: vpc.id
+        }
+      )
+    end
 
-  #     lb_arn = load_balancer.load_balancer_arn
+    test "given an existing target group, with an arn provided it updates the target group", %{default_aws_vpc: vpc} do
+      [arn] =
+        ExAws.ElasticLoadBalancingV2.create_target_group(
+          Faker.Person.first_name(),
+          vpc.id
+        )
+        |> ExAws.request!()
+        |> Map.get(:body)
+        |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
 
-  #     assert {:ok, %Listener{listener_arn: _arn, load_balancer_arn: ^lb_arn}} = TargetGroups.insert_or_update(%Listener{
-  #           load_balancer_arn: lb_arn,
-  #           protocol: "HTTP",
-  #           port: "80",
-  #           default_actions: [
-  #             %Action{
-  #               type: "forward",
-  #               target_group_arn: target_group_arn
-  #             }
-  #           ]
-  #     })
-  #   end
-
-  #   test "given a non-existent listener, even with an arn provided it fails", %{default_aws_vpc: vpc} do
-  #     {:ok, load_balancer} =
-  #       LoadBalancers.create(
-  #         name: Faker.Person.name(),
-  #         schema: "internet-facing",
-  #         subnets: [vpc.subnet.id],
-  #         security_groups: [vpc.security_group.id]
-  #       )
-
-  #     [target_group_arn] =
-  #       ExAws.ElasticLoadBalancingV2.create_target_group(
-  #         Faker.Person.first_name(),
-  #         vpc.id
-  #       )
-  #       |> ExAws.request!()
-  #       |> Map.get(:body)
-  #       |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
-
-  #     lb_arn = load_balancer.load_balancer_arn
-
-  #     assert {:error, :listener_not_found} = TargetGroups.insert_or_update(%Listener{
-  #           listener_arn: "not_there",
-  #           load_balancer_arn: lb_arn,
-  #           protocol: "HTTP",
-  #           port: "80",
-  #           default_actions: [
-  #             %Action{
-  #               type: "forward",
-  #               target_group_arn: target_group_arn
-  #             }
-  #           ]
-  #     })
-  #   end
-
-  #   test "given an existing listener, with an arn provided it updates the listener", %{default_aws_vpc: vpc} do
-  #     {:ok, load_balancer} =
-  #       LoadBalancers.create(
-  #         name: Faker.Person.name(),
-  #         schema: "internet-facing",
-  #         subnets: [vpc.subnet.id],
-  #         security_groups: [vpc.security_group.id]
-  #       )
-
-  #     [target_group_arn] =
-  #       ExAws.ElasticLoadBalancingV2.create_target_group(
-  #         Faker.Person.first_name(),
-  #         vpc.id
-  #       )
-  #       |> ExAws.request!()
-  #       |> Map.get(:body)
-  #       |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
-
-  #     lb_arn = load_balancer.load_balancer_arn
-
-  #     {:ok, %{listener_arn: arn}} = TargetGroups.insert_or_update(
-  #       %Listener{
-  #         load_balancer_arn: lb_arn,
-  #         protocol: "HTTP",
-  #         port: 80,
-  #         default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
-  #       }
-  #     )
-
-  #     %{"CertificateArn" => certificate_arn} = ExAws.ACM.request_certificate("helloworld.example.com", validation_method: "DNS")
-  #     |> ExAws.request!()
-
-  #     assert {:ok, %Listener{listener_arn: ^arn, port: 81, protocol: "HTTPS"}} = TargetGroups.insert_or_update(%Listener{
-  #           listener_arn: arn,
-  #           load_balancer_arn: lb_arn,
-  #           protocol: "HTTPS",
-  #           certificates: [%Certificate{certificate_arn: certificate_arn, is_default: true}],
-  #           ssl_policy: "ELBSecurityPolicy-TLS-1-2-2017-01",
-  #           port: 81,
-  #           default_actions: [
-  #             %Action{
-  #               type: "forward",
-  #               target_group_arn: target_group_arn
-  #             }
-  #           ]
-  #     })
-  #   end
-  # end
+      assert {:ok, %TargetGroup{
+                 target_group_arn: ^arn,
+                 health_check_enabled: nil,
+                 health_check_interval_seconds: nil,
+                 health_check_path: "/api/v1/healthy",
+                 health_check_port: "2000",
+                 health_check_protocol: "TLS",
+                 health_check_timeout_seconds: nil,
+                 healthy_threshold_count: 3,
+                 unhealthy_threshold_count: 4,
+                 matcher: nil
+              }} = TargetGroups.insert_or_update(%TargetGroup{
+            target_group_arn: arn,
+            health_check_enabled: true,
+            health_check_interval_seconds: 10,
+            health_check_path: "/api/v1/healthy",
+            health_check_port: "2000",
+            health_check_protocol: "TLS",
+            health_check_timeout_seconds: 10,
+            healthy_threshold_count: 3,
+            unhealthy_threshold_count: 4,
+            matcher: %Matcher{
+              http_code: "200"
+            }
+      })
+    end
+  end
 
   # describe "delete/1" do
   #   test "given a listener that exists, deletes it", %{default_aws_vpc: vpc} do

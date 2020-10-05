@@ -68,46 +68,48 @@ defmodule AwsIngressOperator.TargetGroups do
     end
   end
 
-  # def insert_or_update(listener) do
-  #   case Map.get(listener, :listener_arn) do
-  #     nil -> insert(listener)
-  #     arn ->
-  #       case get(arn: arn) do
-  #         {:ok, existing_listener} -> update(existing_listener, listener)
-  #         {:error, _} -> {:error, :listener_not_found}
-  #       end
-  #   end
-  # end
+  def insert_or_update(target_group) do
+    case Map.get(target_group, :target_group_arn) do
+      nil -> insert(target_group)
+      arn ->
+        case get(arn: arn) do
+          {:ok, existing_tg} -> update(existing_tg, target_group)
+          {:error, _} -> {:error, :resource_not_found}
+        end
+    end
+  end
 
-  # defp insert(listener) do
-  #   [arn] = ExAws.ElasticLoadBalancingV2.create_listener(
-  #     listener.load_balancer_arn,
-  #     listener.protocol,
-  #     listener.port,
-  #     listener.default_actions
-  #   )
-  #   |> ExAws.request!()
-  #   |> Map.get(:body)
-  #   |> SweetXml.xpath(~x"//ListenerArn/text()"ls)
+  defp insert(target_group) do
+    [arn] = ExAws.ElasticLoadBalancingV2.create_target_group(
+      target_group.target_group_name,
+      target_group.vpc_id
+    )
+    |> ExAws.request!()
+    |> Map.get(:body)
+    |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
 
-  #   get(arn: arn)
-  # end
+    get(arn: arn)
+  end
 
-  # defp update(existing_listener, updated_listener) do
-  #   ExAws.ElasticLoadBalancingV2.modify_listener(
-  #     existing_listener.listener_arn, [
-  #       protocol: updated_listener.protocol,
-  #       port: updated_listener.port,
-  #       default_actions: updated_listener.default_actions,
-  #       ssl_policy: updated_listener.ssl_policy,
-  #       certificates: updated_listener.certificates
-  #     ]
-  #   )
-  #   |> ExAws.request!()
-  #   |> Map.get(:body)
+  defp update(existing_target_group, updated_target_group) do
+    ExAws.ElasticLoadBalancingV2.modify_target_group(
+      existing_target_group.target_group_arn, [
+        health_check_enabled: updated_target_group.health_check_enabled,
+        health_check_interval_seconds: updated_target_group.health_check_interval_seconds,
+        health_check_path: updated_target_group.health_check_path,
+        health_check_port: updated_target_group.health_check_port,
+        health_check_protocol: updated_target_group.health_check_protocol,
+        health_check_timeout_seconds: updated_target_group.health_check_timeout_seconds,
+        healthy_threshold_count: updated_target_group.healthy_threshold_count,
+        unhealthy_threshold_count: updated_target_group.unhealthy_threshold_count,
+        matcher: updated_target_group.matcher.http_code
+      ]
+    )
+    |> ExAws.request!()
+    |> Map.get(:body)
 
-  #   get(arn: existing_listener.listener_arn)
-  # end
+    get(arn: existing_target_group.target_group_arn)
+  end
 
   # def delete(listener) do
   #   ExAws.ElasticLoadBalancingV2.delete_listener(listener.listener_arn)
