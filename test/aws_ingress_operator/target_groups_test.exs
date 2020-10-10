@@ -151,7 +151,7 @@ defmodule AwsIngressOperator.TargetGroupsTest do
 
       assert {:ok, %TargetGroup{
                  target_group_arn: ^arn,
-                 health_check_enabled: true,
+                 health_check_enabled: nil, # missing from moto
                  health_check_interval_seconds: 10,
                  health_check_path: "/api/v1/healthy",
                  health_check_port: "2000",

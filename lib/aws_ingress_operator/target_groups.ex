@@ -114,14 +114,18 @@ defmodule AwsIngressOperator.TargetGroups do
   end
 
   defp better_parser({:ok, %{body: body}}, :describe_target_groups) do
-    IO.inspect(body, label: "body")
-    {:ok, response} = XmlJson.AwsApi.deserialize(body, exclude_namespaces: true)
+    {:ok, response} = XmlJson.AwsApi.deserialize(body)
 
     tgs = AtomicMap.convert(response, %{safe: false})
-    |> IO.inspect(label: "WTF")
     |> get_in([:describe_target_groups_response, :describe_target_groups_result, :target_groups, Access.all()])
 
     {:ok, tgs}
+  end
+
+  defp better_parser({:error, {_type, _code, %{body: body}}}, :describe_target_groups) do
+    response = XmlJson.AwsApi.deserialize!(body)
+
+    {:error, response}
   end
 
   # def delete(listener) do

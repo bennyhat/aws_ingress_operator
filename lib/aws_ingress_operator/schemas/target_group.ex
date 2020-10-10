@@ -63,6 +63,8 @@ defmodule AwsIngressOperator.Schemas.Matcher do
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(original, changes) do
+    changes = Map.update(changes, :http_code, nil, &to_string/1)
+
     original
     |> cast(changes, @cast_fields)
   end
@@ -117,6 +119,8 @@ defmodule AwsIngressOperator.Schemas.TargetGroup do
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
 
   def changeset(original, changes) do
+    changes = Map.update(changes, :health_check_port, nil, &to_string/1)
+
     original
     |> cast(changes, @cast_fields)
     |> cast_embed(:matcher)
