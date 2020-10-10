@@ -89,6 +89,7 @@ defmodule AwsIngressOperator.Schemas.TargetGroup do
     field :protocol, :string
     field :target_group_arn, :string
     field :target_group_name, :string
+    field :name, :string
     field :target_type, :string
     field :unhealthy_threshold_count, :integer
     field :vpc_id, :string
@@ -109,6 +110,7 @@ defmodule AwsIngressOperator.Schemas.TargetGroup do
     :protocol,
     :target_group_arn,
     :target_group_name,
+    :name,
     :target_type,
     :unhealthy_threshold_count,
     :vpc_id

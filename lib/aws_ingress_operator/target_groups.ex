@@ -47,20 +47,16 @@ defmodule AwsIngressOperator.TargetGroups do
   def list(opts \\ []) do
     opts = alias_options(opts)
 
-    describe_request = ExAws.ElasticLoadBalancingV2.describe_target_groups(opts)
-    |> Map.put(:parser, &better_parser/2)
-
+    describe_request = AwsIngressOperator.ExAws.Elbv2.describe_target_groups(opts)
     case ExAws.request(describe_request) do
         {:ok, target_groups} ->
           tgs = target_groups
-          |> get_in([:describe_target_groups_response, :describe_target_groups_result, :target_groups, Access.all()])
           |> Enum.map(&TargetGroup.changeset/1)
           |> Enum.map(&Ecto.Changeset.apply_changes/1)
 
           {:ok, tgs}
         error -> error
     end
-
   end
 
   def get(opts \\ []) do
@@ -82,99 +78,17 @@ defmodule AwsIngressOperator.TargetGroups do
   end
 
   defp insert(target_group) do
-    main_params = %{
-      "Action" => "CreateTargetGroup",
-      "Version" => "2015-12-01"
-    }
-    arn = %ExAws.Operation.Query{
-      action: :create_target_group,
-      content_encoding: "identity",
-      params: Map.merge(
-        main_params,
-        build_params(target_group) |> Map.put("Name", target_group.target_group_name)
-      ),
-      parser: &better_parser/2,
-      path: "/",
-      service: :elasticloadbalancing
-    }
+    %{target_group_arn: arn} = AwsIngressOperator.ExAws.Elbv2.create_target_group(target_group)
     |> ExAws.request!()
-    |> get_in([:create_target_group_response, :create_target_group_result, :target_groups, Access.all()])
-    |> List.first()
-    |> Map.get(:target_group_arn)
 
     get(arn: arn)
   end
 
-  defp update(existing_target_group, updated_target_group) do
-    main_params = %{
-      "Action" => "ModifyTargetGroup",
-      "Version" => "2015-12-01"
-    }
-    %ExAws.Operation.Query{
-      action: :modify_target_group,
-      content_encoding: "identity",
-      params: Map.merge(
-        main_params,
-        build_params(updated_target_group)
-      ),
-      parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2,
-      path: "/",
-      service: :elasticloadbalancing
-    }
+  defp update(existing_target_group, target_group) do
+    AwsIngressOperator.ExAws.Elbv2.modify_target_group(target_group)
     |> ExAws.request!()
 
     get(arn: existing_target_group.target_group_arn)
-  end
-
-  defp build_params(tg) do
-    camel_keyed = to_camel_key(tg)
-
-    XmlJson.AwsApi.serialize_as_params!(camel_keyed)
-  end
-
-  defp to_camel_key(%_is_struct{} = tg) do
-    to_camel_key(Map.from_struct(tg))
-  end
-
-  defp to_camel_key(tg) when is_map(tg) do
-    Enum.map(tg, &to_camel_key/1)
-    |> Enum.reject(fn {_k, v} ->
-      is_nil(v)
-    end)
-    |> Map.new()
-  end
-
-  defp to_camel_key(tg) when is_list(tg) do
-    Enum.map(tg, &to_camel_key/1)
-  end
-
-  defp to_camel_key({k, v}) do
-    camel = to_string(k)
-    |> Macro.camelize()
-    |> to_string()
-    {camel, to_camel_key(v)}
-  end
-
-  defp to_camel_key(v) do
-    v
-  end
-
-  defp better_parser({:ok, %{body: body}}, _) do
-    {:ok, response} = XmlJson.AwsApi.deserialize(body)
-
-    tgs = AtomicMap.convert(response, %{safe: false})
-
-    {:ok, tgs}
-  end
-
-  defp better_parser({:error, {_type, _code, %{body: body}}}, _) do
-    response = XmlJson.AwsApi.deserialize!(body)
-
-    {:error, response}
-  end
-
-  defp better_parser({:error, {_type, _code, body}}, _) do
-    {:error, body}
   end
 
   # def delete(listener) do
