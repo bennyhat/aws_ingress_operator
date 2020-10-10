@@ -29,13 +29,13 @@ defmodule AwsIngressOperator.MixProject do
       {:ex_aws_elastic_load_balancing, "~> 2.0"},
       {:jaxon, "~> 1.0"},
       {:k8s, "~> 0.4"},
+      {:sweet_xml, "~> 0.6"},
       {:xml_json, "~> 0.3"},
       {:checkov, "~> 1.0", only: :test},
       {:divo, "~> 1.1", only: :test},
       {:divo_moto, "~> 0.1.0", only: :test},
       {:faker, "~> 0.13", only: :test},
       {:netaddr_ex, "~> 1.2", only: :test},
-      {:sweet_xml, "~> 0.6", only: :test},
       {:tesla, "~> 1.3.0", only: :test}
     ]
   end

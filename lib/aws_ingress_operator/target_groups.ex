@@ -83,34 +83,88 @@ defmodule AwsIngressOperator.TargetGroups do
   end
 
   defp insert(target_group) do
-    [arn] = ExAws.ElasticLoadBalancingV2.create_target_group(
-      target_group.target_group_name,
-      target_group.vpc_id
-    )
+    # ExAws.ElasticLoadBalancingV2.create_target_group(
+    #   target_group.target_group_name,
+    #   target_group.vpc_id
+    # )
+    # |> IO.inspect(label: "gorr")
+
+    arn = "butt"
+
+    main_params = %{
+      "Action" => "CreateTargetGroup",
+      "Version" => "2015-12-01"
+    }
+    %ExAws.Operation.Query{
+      action: :create_target_group,
+      content_encoding: "identity",
+      params: Map.merge(
+        main_params,
+        build_params(target_group) |> Map.put("Name", target_group.target_group_name)
+      ),
+      parser: &better_parser/2,
+      path: "/",
+      service: :elasticloadbalancing
+    }
+    |> IO.inspect(label: "grrrr")
     |> ExAws.request!()
-    |> Map.get(:body)
-    |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
+    |> IO.inspect(label: "WTF")
 
     get(arn: arn)
   end
 
   defp update(existing_target_group, updated_target_group) do
-    ExAws.ElasticLoadBalancingV2.modify_target_group(
-      existing_target_group.target_group_arn, [
-        health_check_enabled: updated_target_group.health_check_enabled,
-        health_check_interval_seconds: updated_target_group.health_check_interval_seconds,
-        health_check_path: updated_target_group.health_check_path,
-        health_check_port: updated_target_group.health_check_port,
-        health_check_protocol: updated_target_group.health_check_protocol,
-        health_check_timeout_seconds: updated_target_group.health_check_timeout_seconds,
-        healthy_threshold_count: updated_target_group.healthy_threshold_count,
-        unhealthy_threshold_count: updated_target_group.unhealthy_threshold_count,
-        matcher: updated_target_group.matcher.http_code
-      ]
-    )
+    main_params = %{
+      "Action" => "ModifyTargetGroup",
+      "Version" => "2015-12-01"
+    }
+    %ExAws.Operation.Query{
+      action: :modify_target_group,
+      content_encoding: "identity",
+      params: Map.merge(
+        main_params,
+        build_params(updated_target_group)
+      ),
+      parser: &ExAws.ElasticLoadBalancingV2.Parsers.parse/2,
+      path: "/",
+      service: :elasticloadbalancing
+    }
     |> ExAws.request!()
 
     get(arn: existing_target_group.target_group_arn)
+  end
+
+  defp build_params(tg) do
+    camel_keyed = to_camel_key(tg)
+
+    XmlJson.AwsApi.serialize_as_params!(camel_keyed)
+  end
+
+  defp to_camel_key(%_is_struct{} = tg) do
+    to_camel_key(Map.from_struct(tg))
+  end
+
+  defp to_camel_key(tg) when is_map(tg) do
+    Enum.map(tg, &to_camel_key/1)
+    |> Enum.reject(fn {_k, v} ->
+      is_nil(v)
+    end)
+    |> Map.new()
+  end
+
+  defp to_camel_key(tg) when is_list(tg) do
+    Enum.map(tg, &to_camel_key/1)
+  end
+
+  defp to_camel_key({k, v}) do
+    camel = to_string(k)
+    |> Macro.camelize()
+    |> to_string()
+    {camel, to_camel_key(v)}
+  end
+
+  defp to_camel_key(v) do
+    v
   end
 
   defp better_parser({:ok, %{body: body}}, :describe_target_groups) do
@@ -126,6 +180,10 @@ defmodule AwsIngressOperator.TargetGroups do
     response = XmlJson.AwsApi.deserialize!(body)
 
     {:error, response}
+  end
+
+  defp better_parser({:error, {_type, _code, body}}, _) do
+    {:error, body}
   end
 
   # def delete(listener) do
