@@ -49,13 +49,16 @@ defmodule AwsIngressOperator.TargetGroups do
   def list(opts \\ []) do
     opts = alias_options(opts)
 
-    case ExAws.ElasticLoadBalancingV2.describe_target_groups(opts) |> ExAws.request() do
-        {:ok, %{body: body}} ->
-          target_groups = Map.get(body, :target_groups)
+    describe_request = ExAws.ElasticLoadBalancingV2.describe_target_groups(opts)
+    |> Map.put(:parser, &better_parser/2)
+
+    case ExAws.request(describe_request) do
+        {:ok, target_groups} ->
+          tgs = target_groups
           |> Enum.map(&TargetGroup.changeset/1)
           |> Enum.map(&Ecto.Changeset.apply_changes/1)
 
-          {:ok, target_groups}
+          {:ok, tgs}
         error -> error
     end
 
@@ -106,9 +109,19 @@ defmodule AwsIngressOperator.TargetGroups do
       ]
     )
     |> ExAws.request!()
-    |> Map.get(:body)
 
     get(arn: existing_target_group.target_group_arn)
+  end
+
+  defp better_parser({:ok, %{body: body}}, :describe_target_groups) do
+    IO.inspect(body, label: "body")
+    {:ok, response} = XmlJson.AwsApi.deserialize(body, exclude_namespaces: true)
+
+    tgs = AtomicMap.convert(response, %{safe: false})
+    |> IO.inspect(label: "WTF")
+    |> get_in([:describe_target_groups_response, :describe_target_groups_result, :target_groups, Access.all()])
+
+    {:ok, tgs}
   end
 
   # def delete(listener) do

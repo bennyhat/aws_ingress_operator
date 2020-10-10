@@ -21,12 +21,15 @@ defmodule AwsIngressOperator.MixProject do
   defp deps do
     [
       {:accessible, "~> 0.2.1"},
+      {:atomic_map, "~> 0.9.3"},
       {:ecto, "~> 3.3.4"},
       {:ex_aws, "~> 2.1"},
       {:ex_aws_acm, "~> 1.0"},
       {:ex_aws_ec2, "~> 2.0"},
       {:ex_aws_elastic_load_balancing, "~> 2.0"},
+      {:jaxon, "~> 1.0"},
       {:k8s, "~> 0.4"},
+      {:xml_json, "~> 0.3"},
       {:checkov, "~> 1.0", only: :test},
       {:divo, "~> 1.1", only: :test},
       {:divo_moto, "~> 0.1.0", only: :test},

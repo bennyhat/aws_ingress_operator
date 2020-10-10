@@ -151,15 +151,17 @@ defmodule AwsIngressOperator.TargetGroupsTest do
 
       assert {:ok, %TargetGroup{
                  target_group_arn: ^arn,
-                 health_check_enabled: nil,
-                 health_check_interval_seconds: nil,
+                 health_check_enabled: true,
+                 health_check_interval_seconds: 10,
                  health_check_path: "/api/v1/healthy",
                  health_check_port: "2000",
                  health_check_protocol: "TLS",
-                 health_check_timeout_seconds: nil,
+                 health_check_timeout_seconds: 10,
                  healthy_threshold_count: 3,
                  unhealthy_threshold_count: 4,
-                 matcher: nil
+                 matcher: %Matcher{
+                   http_code: "200"
+                 }
               }} = TargetGroups.insert_or_update(%TargetGroup{
             target_group_arn: arn,
             health_check_enabled: true,
