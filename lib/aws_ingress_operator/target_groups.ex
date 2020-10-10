@@ -2,8 +2,6 @@ defmodule AwsIngressOperator.TargetGroups do
   @moduledoc """
   A repository pattern wrapper for a Target Group inventory
   """
-  import SweetXml
-
   alias AwsIngressOperator.Schemas.TargetGroup
 
   @option_aliases %{
@@ -55,6 +53,7 @@ defmodule AwsIngressOperator.TargetGroups do
     case ExAws.request(describe_request) do
         {:ok, target_groups} ->
           tgs = target_groups
+          |> get_in([:describe_target_groups_response, :describe_target_groups_result, :target_groups, Access.all()])
           |> Enum.map(&TargetGroup.changeset/1)
           |> Enum.map(&Ecto.Changeset.apply_changes/1)
 
@@ -83,19 +82,11 @@ defmodule AwsIngressOperator.TargetGroups do
   end
 
   defp insert(target_group) do
-    # ExAws.ElasticLoadBalancingV2.create_target_group(
-    #   target_group.target_group_name,
-    #   target_group.vpc_id
-    # )
-    # |> IO.inspect(label: "gorr")
-
-    arn = "butt"
-
     main_params = %{
       "Action" => "CreateTargetGroup",
       "Version" => "2015-12-01"
     }
-    %ExAws.Operation.Query{
+    arn = %ExAws.Operation.Query{
       action: :create_target_group,
       content_encoding: "identity",
       params: Map.merge(
@@ -106,9 +97,10 @@ defmodule AwsIngressOperator.TargetGroups do
       path: "/",
       service: :elasticloadbalancing
     }
-    |> IO.inspect(label: "grrrr")
     |> ExAws.request!()
-    |> IO.inspect(label: "WTF")
+    |> get_in([:create_target_group_response, :create_target_group_result, :target_groups, Access.all()])
+    |> List.first()
+    |> Map.get(:target_group_arn)
 
     get(arn: arn)
   end
@@ -167,16 +159,15 @@ defmodule AwsIngressOperator.TargetGroups do
     v
   end
 
-  defp better_parser({:ok, %{body: body}}, :describe_target_groups) do
+  defp better_parser({:ok, %{body: body}}, _) do
     {:ok, response} = XmlJson.AwsApi.deserialize(body)
 
     tgs = AtomicMap.convert(response, %{safe: false})
-    |> get_in([:describe_target_groups_response, :describe_target_groups_result, :target_groups, Access.all()])
 
     {:ok, tgs}
   end
 
-  defp better_parser({:error, {_type, _code, %{body: body}}}, :describe_target_groups) do
+  defp better_parser({:error, {_type, _code, %{body: body}}}, _) do
     response = XmlJson.AwsApi.deserialize!(body)
 
     {:error, response}
