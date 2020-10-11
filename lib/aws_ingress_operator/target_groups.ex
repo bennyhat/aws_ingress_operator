@@ -5,25 +5,18 @@ defmodule AwsIngressOperator.TargetGroups do
   alias AwsIngressOperator.Schemas.TargetGroup
   alias AwsIngressOperator.ExAws.Elbv2
 
-  def list(opts \\ []) do
-    case Elbv2.TargetGroup.describe_target_groups(opts) do
-      {:ok, target_groups} ->
-        tgs =
-          target_groups
-          |> Enum.map(&TargetGroup.changeset/1)
-          |> Enum.map(&Ecto.Changeset.apply_changes/1)
+  def list(filter \\ []) do
+    tgs = Elbv2.TargetGroup.describe_target_groups!(filter)
+    |> Enum.map(&TargetGroup.changeset/1)
+    |> Enum.map(&Ecto.Changeset.apply_changes/1)
 
-        {:ok, tgs}
-
-      error ->
-        error
-    end
+    {:ok, tgs}
   end
 
-  def get(opts \\ []) do
-    case list(opts) do
+  def get(filter) do
+    case list(filter) do
       {:ok, [target_group]} -> {:ok, target_group}
-      error -> error
+      {:ok, []} -> {:error, :resource_not_found}
     end
   end
 
@@ -32,7 +25,7 @@ defmodule AwsIngressOperator.TargetGroups do
   def insert_or_update(%{target_group_arn: arn} = tg) do
     case get(arn: arn) do
       {:ok, existing_tg} -> update(existing_tg, tg)
-      {:error, _} -> {:error, :resource_not_found}
+      error -> error
     end
   end
 

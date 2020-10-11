@@ -66,10 +66,12 @@ defmodule AwsIngressOperator.TargetGroupsTest do
     } do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
         LoadBalancers.create(
-          name: Faker.Person.name(),
-          schema: "internet-facing",
-          subnets: [vpc.subnet.id],
-          security_groups: [vpc.security_group.id]
+          %LoadBalancer{
+            load_balancer_name: Faker.Person.name(),
+            scheme: "internet-facing",
+            subnets: [vpc.subnet.id],
+            security_groups: [vpc.security_group.id]
+          }
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
@@ -204,7 +206,7 @@ defmodule AwsIngressOperator.TargetGroupsTest do
                  target_group_arn: arn
                })
 
-      assert {:error, _} = TargetGroups.list(target_group_arn: arn)
+      assert {:ok, []} = TargetGroups.list(target_group_arn: arn)
     end
   end
 end

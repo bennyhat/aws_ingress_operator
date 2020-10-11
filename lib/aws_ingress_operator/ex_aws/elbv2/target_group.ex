@@ -3,7 +3,7 @@ defmodule AwsIngressOperator.ExAws.Elbv2.TargetGroup do
 
   import AwsIngressOperator.ExAws.Elbv2, only: [make_request: 2, make_request: 3]
 
-  def describe_target_groups(filters) do
+  def describe_target_groups!(filters) do
     action = :describe_target_groups
     aliased_filters = FilterAliases.apply_aliases(action, filters)
 
@@ -18,8 +18,10 @@ defmodule AwsIngressOperator.ExAws.Elbv2.TargetGroup do
         tgs || []
     end
 
-    make_request(aliased_filters, action, return_target_groups)
-    |> ExAws.request()
+    case make_request(aliased_filters, action, return_target_groups) |> ExAws.request() do
+      {:ok, tgs} -> tgs
+      {:error, _} -> []
+    end
   end
 
   def create_target_group!(tg) do

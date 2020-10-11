@@ -15,10 +15,11 @@ defmodule AwsIngressOperator.LoadBalancers do
     {:ok, load_balancers}
   end
 
-  def get(filter \\ []) do
-    {:ok, [load_balancer]} = list(filter)
-
-    {:ok, load_balancer}
+  def get(filter) do
+    case list(filter) do
+      {:ok, [load_balancer]} -> {:ok, load_balancer}
+      {:ok, []} -> {:error, :resource_not_found}
+    end
   end
 
   def create(load_balancer) do
