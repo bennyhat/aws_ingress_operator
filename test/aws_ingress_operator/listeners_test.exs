@@ -11,7 +11,9 @@ defmodule AwsIngressOperator.ListenersTest do
   alias AwsIngressOperator.Schemas.Certificate
 
   describe "list/1" do
-    test "given some listeners, returns list of them by load balancer arn", %{default_aws_vpc: vpc} do
+    test "given some listeners, returns list of them by load balancer arn", %{
+      default_aws_vpc: vpc
+    } do
       {:ok, load_balancer} =
         LoadBalancers.create(
           name: Faker.Person.name(),
@@ -31,14 +33,13 @@ defmodule AwsIngressOperator.ListenersTest do
 
       lb_arn = load_balancer.load_balancer_arn
 
-      {:ok, %{listener_arn: arn}} = Listeners.insert_or_update(
-        %Listener{
+      {:ok, %{listener_arn: arn}} =
+        Listeners.insert_or_update(%Listener{
           load_balancer_arn: lb_arn,
           protocol: "HTTP",
           port: 80,
           default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
-        }
-      )
+        })
 
       assert {:ok,
               [
@@ -69,25 +70,23 @@ defmodule AwsIngressOperator.ListenersTest do
 
       lb_arn = load_balancer.load_balancer_arn
 
-      {:ok, %{listener_arn: arn}} = Listeners.insert_or_update(
-        %Listener{
+      {:ok, %{listener_arn: arn}} =
+        Listeners.insert_or_update(%Listener{
           load_balancer_arn: lb_arn,
           protocol: "HTTP",
           port: 80,
           default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
-        }
-      )
+        })
 
-      Listeners.insert_or_update(
-        %Listener{
-          load_balancer_arn: lb_arn,
-          protocol: "HTTP",
-          port: 80,
-          default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
-        }
-      )
+      Listeners.insert_or_update(%Listener{
+        load_balancer_arn: lb_arn,
+        protocol: "HTTP",
+        port: 80,
+        default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
+      })
 
-      assert {:ok, [
+      assert {:ok,
+              [
                 %Listener{
                   listener_arn: ^arn
                 }
@@ -116,23 +115,20 @@ defmodule AwsIngressOperator.ListenersTest do
 
       lb_arn = load_balancer.load_balancer_arn
 
-      Listeners.insert_or_update(
-        %Listener{
-          load_balancer_arn: lb_arn,
-          protocol: "HTTP",
-          port: 80,
-          default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
-        }
-      )
+      Listeners.insert_or_update(%Listener{
+        load_balancer_arn: lb_arn,
+        protocol: "HTTP",
+        port: 80,
+        default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
+      })
 
-      {:ok, %{listener_arn: arn}} = Listeners.insert_or_update(
-        %Listener{
+      {:ok, %{listener_arn: arn}} =
+        Listeners.insert_or_update(%Listener{
           load_balancer_arn: lb_arn,
           protocol: "HTTP",
           port: 80,
           default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
-        }
-      )
+        })
 
       assert {:ok, %Listener{listener_arn: ^arn}} = Listeners.get(arn: arn)
     end
@@ -159,20 +155,23 @@ defmodule AwsIngressOperator.ListenersTest do
 
       lb_arn = load_balancer.load_balancer_arn
 
-      assert {:ok, %Listener{listener_arn: _arn, load_balancer_arn: ^lb_arn}} = Listeners.insert_or_update(%Listener{
-            load_balancer_arn: lb_arn,
-            protocol: "HTTP",
-            port: "80",
-            default_actions: [
-              %Action{
-                type: "forward",
-                target_group_arn: target_group_arn
-              }
-            ]
-      })
+      assert {:ok, %Listener{listener_arn: _arn, load_balancer_arn: ^lb_arn}} =
+               Listeners.insert_or_update(%Listener{
+                 load_balancer_arn: lb_arn,
+                 protocol: "HTTP",
+                 port: "80",
+                 default_actions: [
+                   %Action{
+                     type: "forward",
+                     target_group_arn: target_group_arn
+                   }
+                 ]
+               })
     end
 
-    test "given a non-existent listener, even with an arn provided it fails", %{default_aws_vpc: vpc} do
+    test "given a non-existent listener, even with an arn provided it fails", %{
+      default_aws_vpc: vpc
+    } do
       {:ok, load_balancer} =
         LoadBalancers.create(
           name: Faker.Person.name(),
@@ -192,21 +191,24 @@ defmodule AwsIngressOperator.ListenersTest do
 
       lb_arn = load_balancer.load_balancer_arn
 
-      assert {:error, :listener_not_found} = Listeners.insert_or_update(%Listener{
-            listener_arn: "not_there",
-            load_balancer_arn: lb_arn,
-            protocol: "HTTP",
-            port: "80",
-            default_actions: [
-              %Action{
-                type: "forward",
-                target_group_arn: target_group_arn
-              }
-            ]
-      })
+      assert {:error, :listener_not_found} =
+               Listeners.insert_or_update(%Listener{
+                 listener_arn: "not_there",
+                 load_balancer_arn: lb_arn,
+                 protocol: "HTTP",
+                 port: "80",
+                 default_actions: [
+                   %Action{
+                     type: "forward",
+                     target_group_arn: target_group_arn
+                   }
+                 ]
+               })
     end
 
-    test "given an existing listener, with an arn provided it updates the listener", %{default_aws_vpc: vpc} do
+    test "given an existing listener, with an arn provided it updates the listener", %{
+      default_aws_vpc: vpc
+    } do
       {:ok, load_balancer} =
         LoadBalancers.create(
           name: Faker.Person.name(),
@@ -226,32 +228,33 @@ defmodule AwsIngressOperator.ListenersTest do
 
       lb_arn = load_balancer.load_balancer_arn
 
-      {:ok, %{listener_arn: arn}} = Listeners.insert_or_update(
-        %Listener{
+      {:ok, %{listener_arn: arn}} =
+        Listeners.insert_or_update(%Listener{
           load_balancer_arn: lb_arn,
           protocol: "HTTP",
           port: 80,
           default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
-        }
-      )
+        })
 
-      %{"CertificateArn" => certificate_arn} = ExAws.ACM.request_certificate("helloworld.example.com", validation_method: "DNS")
-      |> ExAws.request!()
+      %{"CertificateArn" => certificate_arn} =
+        ExAws.ACM.request_certificate("helloworld.example.com", validation_method: "DNS")
+        |> ExAws.request!()
 
-      assert {:ok, %Listener{listener_arn: ^arn, port: 81, protocol: "HTTPS"}} = Listeners.insert_or_update(%Listener{
-            listener_arn: arn,
-            load_balancer_arn: lb_arn,
-            protocol: "HTTPS",
-            certificates: [%Certificate{certificate_arn: certificate_arn, is_default: true}],
-            ssl_policy: "ELBSecurityPolicy-TLS-1-2-2017-01",
-            port: 81,
-            default_actions: [
-              %Action{
-                type: "forward",
-                target_group_arn: target_group_arn
-              }
-            ]
-      })
+      assert {:ok, %Listener{listener_arn: ^arn, port: 81, protocol: "HTTPS"}} =
+               Listeners.insert_or_update(%Listener{
+                 listener_arn: arn,
+                 load_balancer_arn: lb_arn,
+                 protocol: "HTTPS",
+                 certificates: [%Certificate{certificate_arn: certificate_arn, is_default: true}],
+                 ssl_policy: "ELBSecurityPolicy-TLS-1-2-2017-01",
+                 port: 81,
+                 default_actions: [
+                   %Action{
+                     type: "forward",
+                     target_group_arn: target_group_arn
+                   }
+                 ]
+               })
     end
   end
 
@@ -276,18 +279,19 @@ defmodule AwsIngressOperator.ListenersTest do
 
       lb_arn = load_balancer.load_balancer_arn
 
-      {:ok, %{listener_arn: arn}} = Listeners.insert_or_update(
-        %Listener{
+      {:ok, %{listener_arn: arn}} =
+        Listeners.insert_or_update(%Listener{
           load_balancer_arn: lb_arn,
           protocol: "HTTP",
           port: 80,
           default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
-        }
-      )
+        })
 
-      assert :ok = Listeners.delete(%Listener{
-        listener_arn: arn
-      })
+      assert :ok =
+               Listeners.delete(%Listener{
+                 listener_arn: arn
+               })
+
       assert {:ok, []} == Listeners.list(load_balancer_arn: lb_arn)
     end
   end
