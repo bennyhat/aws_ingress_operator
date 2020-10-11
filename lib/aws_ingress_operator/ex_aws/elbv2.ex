@@ -1,13 +1,26 @@
 defmodule AwsIngressOperator.ExAws.Elbv2 do
+  alias AwsIngressOperator.ExAws.FilterAliases
+
   def describe_target_groups(filters) do
-    return_target_groups = fn response ->
-      get_in(response, [:describe_target_groups_response, :describe_target_groups_result, :target_groups, Access.all()])
+    action = :describe_target_groups
+    aliased_filters = FilterAliases.apply_aliases(action, filters)
+
+    return_target_groups = fn
+    %{
+      describe_target_groups_response: %{
+        describe_target_groups_result: %{
+          target_groups: tgs
+        }
+      }
+    } ->
+        tgs || []
     end
 
-    make_request(filters, :describe_target_groups, return_target_groups)
+    make_request(aliased_filters, action, return_target_groups)
+    |> ExAws.request()
   end
 
-  def create_target_group(tg) do
+  def create_target_group!(tg) do
     return_target_group = fn response ->
       [tg] = get_in(response, [:create_target_group_response, :create_target_group_result, :target_groups, Access.all()])
       tg
@@ -15,10 +28,12 @@ defmodule AwsIngressOperator.ExAws.Elbv2 do
 
     Map.put(tg, :name, tg.target_group_name)
     |> make_request(:create_target_group, return_target_group)
+    |> ExAws.request!()
   end
 
-  def modify_target_group(tg) do
+  def modify_target_group!(tg) do
     make_request(tg, :modify_target_group)
+    |> ExAws.request!()
   end
 
   defp make_request(model, action, unpacker \\ &(&1)) do

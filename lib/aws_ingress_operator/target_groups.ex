@@ -3,52 +3,10 @@ defmodule AwsIngressOperator.TargetGroups do
   A repository pattern wrapper for a Target Group inventory
   """
   alias AwsIngressOperator.Schemas.TargetGroup
-
-  @option_aliases %{
-    load_balancer_arn: %{
-      name: :load_balancer_arn,
-      list: false
-    },
-    arn: %{
-      name: :target_group_arns,
-      list: true
-    },
-    arns: %{
-      name: :target_group_arns,
-      list: true
-    },
-    target_group_arns: %{
-      name: :target_group_arns,
-      list: true
-    },
-    name: %{
-      name: :names,
-      list: true
-    },
-    names: %{
-      name: :names,
-      list: true
-    },
-    target_group_name: %{
-      name: :names,
-      list: true
-    }
-  }
-
-  defp alias_options(opts) do
-    Enum.map(opts, fn {k, v} ->
-      case Map.get(@option_aliases, k) do
-        %{name: name, list: true} -> {name, List.wrap(v)}
-        %{name: name, list: false} -> {name, v}
-      end
-    end)
-  end
+  alias AwsIngressOperator.ExAws.Elbv2
 
   def list(opts \\ []) do
-    opts = alias_options(opts)
-
-    describe_request = AwsIngressOperator.ExAws.Elbv2.describe_target_groups(opts)
-    case ExAws.request(describe_request) do
+    case Elbv2.describe_target_groups(opts) do
         {:ok, target_groups} ->
           tgs = target_groups
           |> Enum.map(&TargetGroup.changeset/1)
@@ -66,27 +24,23 @@ defmodule AwsIngressOperator.TargetGroups do
     end
   end
 
-  def insert_or_update(target_group) do
-    case Map.get(target_group, :target_group_arn) do
-      nil -> insert(target_group)
-      arn ->
-        case get(arn: arn) do
-          {:ok, existing_tg} -> update(existing_tg, target_group)
-          {:error, _} -> {:error, :resource_not_found}
-        end
+  def insert_or_update(%{target_group_arn: nil} = tg), do: insert(tg)
+  def insert_or_update(%{target_group_arn: arn} = tg) do
+    case get(arn: arn) do
+      {:ok, existing_tg} -> update(existing_tg, tg)
+      {:error, _} -> {:error, :resource_not_found}
     end
   end
+  def insert_or_update(tg), do: insert(tg)
 
   defp insert(target_group) do
-    %{target_group_arn: arn} = AwsIngressOperator.ExAws.Elbv2.create_target_group(target_group)
-    |> ExAws.request!()
+    %{target_group_arn: arn} = Elbv2.create_target_group!(target_group)
 
     get(arn: arn)
   end
 
   defp update(existing_target_group, target_group) do
-    AwsIngressOperator.ExAws.Elbv2.modify_target_group(target_group)
-    |> ExAws.request!()
+    Elbv2.modify_target_group!(target_group)
 
     get(arn: existing_target_group.target_group_arn)
   end

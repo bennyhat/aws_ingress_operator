@@ -12,6 +12,10 @@ defmodule AwsIngressOperator.TargetGroupsTest do
   alias AwsIngressOperator.Schemas.TargetGroup
 
   describe "list/1" do
+    test "can return an empty list" do
+      assert {:ok, []} = TargetGroups.list()
+    end
+
     test "given some target groups, returns list of them", %{default_aws_vpc: vpc} do
       name = Faker.Person.first_name()
       ExAws.ElasticLoadBalancingV2.create_target_group(name, vpc.id)
