@@ -16,6 +16,7 @@ defmodule AwsIngressOperator.ExAws.Elbv2.Listener do
         }
       } ->
         listeners || []
+
       # moto is broken
       %{
         describe_load_balancers_response: %{

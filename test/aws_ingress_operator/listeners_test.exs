@@ -24,13 +24,11 @@ defmodule AwsIngressOperator.ListenersTest do
           security_groups: [vpc.security_group.id]
         )
 
-       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
-         TargetGroups.insert_or_update(
-            %TargetGroup{
-               target_group_name: Faker.Person.first_name(),
-               vpc_id: vpc.id
-            }
-         )
+      {:ok, %TargetGroup{target_group_arn: tg_arn}} =
+        TargetGroups.insert_or_update(%TargetGroup{
+          target_group_name: Faker.Person.first_name(),
+          vpc_id: vpc.id
+        })
 
       {:ok, %{listener_arn: arn}} =
         Listeners.insert_or_update(%Listener{
@@ -59,12 +57,10 @@ defmodule AwsIngressOperator.ListenersTest do
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
-        TargetGroups.insert_or_update(
-          %TargetGroup{
-            target_group_name: Faker.Person.first_name(),
-            vpc_id: vpc.id
-          }
-        )
+        TargetGroups.insert_or_update(%TargetGroup{
+          target_group_name: Faker.Person.first_name(),
+          vpc_id: vpc.id
+        })
 
       {:ok, %{listener_arn: arn}} =
         Listeners.insert_or_update(%Listener{
@@ -101,12 +97,10 @@ defmodule AwsIngressOperator.ListenersTest do
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
-        TargetGroups.insert_or_update(
-          %TargetGroup{
-            target_group_name: Faker.Person.first_name(),
-            vpc_id: vpc.id
-          }
-        )
+        TargetGroups.insert_or_update(%TargetGroup{
+          target_group_name: Faker.Person.first_name(),
+          vpc_id: vpc.id
+        })
 
       Listeners.insert_or_update(%Listener{
         load_balancer_arn: lb_arn,
@@ -138,12 +132,10 @@ defmodule AwsIngressOperator.ListenersTest do
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
-        TargetGroups.insert_or_update(
-          %TargetGroup{
-            target_group_name: Faker.Person.first_name(),
-            vpc_id: vpc.id
-          }
-        )
+        TargetGroups.insert_or_update(%TargetGroup{
+          target_group_name: Faker.Person.first_name(),
+          vpc_id: vpc.id
+        })
 
       assert {:ok, %Listener{listener_arn: _arn, load_balancer_arn: ^lb_arn}} =
                Listeners.insert_or_update(%Listener{
@@ -171,12 +163,10 @@ defmodule AwsIngressOperator.ListenersTest do
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
-        TargetGroups.insert_or_update(
-          %TargetGroup{
-            target_group_name: Faker.Person.first_name(),
-            vpc_id: vpc.id
-          }
-        )
+        TargetGroups.insert_or_update(%TargetGroup{
+          target_group_name: Faker.Person.first_name(),
+          vpc_id: vpc.id
+        })
 
       assert {:error, :resource_not_found} =
                Listeners.insert_or_update(%Listener{
@@ -205,12 +195,10 @@ defmodule AwsIngressOperator.ListenersTest do
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
-        TargetGroups.insert_or_update(
-          %TargetGroup{
-            target_group_name: Faker.Person.first_name(),
-            vpc_id: vpc.id
-          }
-        )
+        TargetGroups.insert_or_update(%TargetGroup{
+          target_group_name: Faker.Person.first_name(),
+          vpc_id: vpc.id
+        })
 
       {:ok, %{listener_arn: arn}} =
         Listeners.insert_or_update(%Listener{
@@ -253,12 +241,10 @@ defmodule AwsIngressOperator.ListenersTest do
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
-        TargetGroups.insert_or_update(
-          %TargetGroup{
-            target_group_name: Faker.Person.first_name(),
-            vpc_id: vpc.id
-          }
-        )
+        TargetGroups.insert_or_update(%TargetGroup{
+          target_group_name: Faker.Person.first_name(),
+          vpc_id: vpc.id
+        })
 
       {:ok, %{listener_arn: arn}} =
         Listeners.insert_or_update(%Listener{

@@ -8,7 +8,8 @@ defmodule AwsIngressOperator.Listeners do
   def list(opts \\ []) do
     case Elbv2.Listener.describe_listeners(opts) do
       {:ok, listeners} ->
-        listeners = listeners
+        listeners =
+          listeners
           |> Enum.map(&Listener.changeset/1)
           |> Enum.map(&Ecto.Changeset.apply_changes/1)
 

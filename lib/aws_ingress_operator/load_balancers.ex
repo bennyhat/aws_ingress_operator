@@ -4,63 +4,31 @@ defmodule AwsIngressOperator.LoadBalancers do
   """
 
   alias AwsIngressOperator.Schemas.LoadBalancer
+  alias AwsIngressOperator.ExAws.Elbv2
 
-  @option_aliases %{
-    load_balancer_arns: :load_balancer_arns,
-    load_balancer_arn: :load_balancer_arns,
-    arns: :load_balancer_arns,
-    arn: :load_balancer_arns,
-    load_balancer_names: :names,
-    load_balancer_name: :names,
-    name: :names,
-    names: :names
-  }
-
-  def list(opts \\ []) do
-    aliased_opts =
-      Enum.map(opts, fn {k, v} ->
-        {Map.get(@option_aliases, k), List.wrap(v)}
-      end)
-      |> Keyword.new()
-
+  def list(filter \\ []) do
     load_balancers =
-      ExAws.ElasticLoadBalancingV2.describe_load_balancers(aliased_opts)
-      |> ExAws.request!()
-      |> get_in([:body, :load_balancers])
+      Elbv2.LoadBalancer.describe_load_balancers!(filter)
       |> Enum.map(&LoadBalancer.changeset/1)
       |> Enum.map(&Ecto.Changeset.apply_changes/1)
 
     {:ok, load_balancers}
   end
 
-  def get(opts \\ []) do
-    {:ok, [load_balancer]} = list(opts)
+  def get(filter \\ []) do
+    {:ok, [load_balancer]} = list(filter)
 
     {:ok, load_balancer}
   end
 
-  def create(opts \\ []) do
-    {name_kw, rest} = Keyword.split(opts, [:name])
+  def create(load_balancer) do
+    %{load_balancer_arn: arn} = Elbv2.LoadBalancer.create_load_balancer!(load_balancer)
 
-    name = name_kw[:name]
-
-    ExAws.ElasticLoadBalancingV2.create_load_balancer(name, rest)
-    |> ExAws.request!()
-
-    get(name: name)
+    get(arn: arn)
   end
 
-  def delete(opts \\ []) do
-    aliased_opts =
-      Enum.map(opts, fn {k, v} ->
-        {Map.get(@option_aliases, k), List.wrap(v)}
-      end)
-      |> Keyword.new()
-
-    [arn] = Keyword.fetch!(aliased_opts, :load_balancer_arns)
-
-    ExAws.ElasticLoadBalancingV2.delete_load_balancer(arn)
-    |> ExAws.request!()
+  def delete(load_balancer) do
+    Elbv2.LoadBalancer.delete_load_balancer!(load_balancer)
 
     :ok
   end

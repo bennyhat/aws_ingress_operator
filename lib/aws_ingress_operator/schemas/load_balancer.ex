@@ -95,6 +95,7 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
     field(:type, :string)
     field(:vpc_id, :string)
     field(:security_groups, {:array, :string})
+    field(:subnets, {:array, :string})
 
     embeds_one(:state, State)
     embeds_many(:availability_zones, AvailabilityZone)
@@ -111,7 +112,8 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
     :scheme,
     :type,
     :vpc_id,
-    :security_groups
+    :security_groups,
+    :subnets
   ]
 
   use Accessible

@@ -55,6 +55,40 @@ defmodule AwsIngressOperator.ExAws.FilterAliases do
         name: :listener_arns,
         list: true
       }
+    },
+    describe_load_balancers: %{
+      load_balancer_arns: %{
+        name: :load_balancer_arns,
+        list: true
+      },
+      load_balancer_arn: %{
+        name: :load_balancer_arns,
+        list: true
+      },
+      arns: %{
+        name: :load_balancer_arns,
+        list: true
+      },
+      arn: %{
+        name: :load_balancer_arns,
+        list: true
+      },
+      load_balancer_names: %{
+        name: :names,
+        list: true
+      },
+      load_balancer_name: %{
+        name: :names,
+        list: true
+      },
+      name: %{
+        name: :names,
+        list: true
+      },
+      names: %{
+        name: :names,
+        list: true
+      }
     }
   }
 
