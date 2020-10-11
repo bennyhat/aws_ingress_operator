@@ -1,13 +1,13 @@
 defmodule AwsIngressOperator.TargetGroupsTest do
   @moduledoc false
   use ExUnit.Case
-  import SweetXml
   use AwsIngressOperator.Test.Support.MotoCase, url: "http://localhost:5000"
 
   alias AwsIngressOperator.TargetGroups
   alias AwsIngressOperator.Listeners
   alias AwsIngressOperator.LoadBalancers
   alias AwsIngressOperator.Schemas.Listener
+  alias AwsIngressOperator.Schemas.LoadBalancer
   alias AwsIngressOperator.Schemas.Matcher
   alias AwsIngressOperator.Schemas.TargetGroup
 
@@ -19,8 +19,7 @@ defmodule AwsIngressOperator.TargetGroupsTest do
     test "given some target groups, returns list of them", %{default_aws_vpc: vpc} do
       name = Faker.Person.first_name()
 
-      ExAws.ElasticLoadBalancingV2.create_target_group(name, vpc.id)
-      |> ExAws.request!()
+      TargetGroups.insert_or_update(%TargetGroup{target_group_name: name, vpc_id: vpc.id})
 
       assert {:ok, [%TargetGroup{target_group_name: ^name}]} = TargetGroups.list()
     end
@@ -28,14 +27,13 @@ defmodule AwsIngressOperator.TargetGroupsTest do
     test "given some target groups, returns list of them by arn", %{default_aws_vpc: vpc} do
       name = Faker.Person.first_name()
 
-      [arn] =
-        ExAws.ElasticLoadBalancingV2.create_target_group(name, vpc.id)
-        |> ExAws.request!()
-        |> Map.get(:body)
-        |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
+      {:ok, %TargetGroup{target_group_arn: arn}} =
+        TargetGroups.insert_or_update(%TargetGroup{target_group_name: name, vpc_id: vpc.id})
 
-      ExAws.ElasticLoadBalancingV2.create_target_group(Faker.Person.first_name(), vpc.id)
-      |> ExAws.request!()
+      TargetGroups.insert_or_update(%TargetGroup{
+        target_group_name: Faker.Person.first_name(),
+        vpc_id: vpc.id
+      })
 
       assert {:ok,
               [
@@ -48,11 +46,12 @@ defmodule AwsIngressOperator.TargetGroupsTest do
     test "given some target groups, returns list of them by name", %{default_aws_vpc: vpc} do
       name = Faker.Person.first_name()
 
-      ExAws.ElasticLoadBalancingV2.create_target_group(name, vpc.id)
-      |> ExAws.request!()
+      TargetGroups.insert_or_update(%TargetGroup{target_group_name: name, vpc_id: vpc.id})
 
-      ExAws.ElasticLoadBalancingV2.create_target_group(Faker.Person.first_name(), vpc.id)
-      |> ExAws.request!()
+      TargetGroups.insert_or_update(%TargetGroup{
+        target_group_name: Faker.Person.first_name(),
+        vpc_id: vpc.id
+      })
 
       assert {:ok,
               [
@@ -65,7 +64,7 @@ defmodule AwsIngressOperator.TargetGroupsTest do
     test "given some target groups, returns list of them by load balancer arn", %{
       default_aws_vpc: vpc
     } do
-      {:ok, load_balancer} =
+      {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
         LoadBalancers.create(
           name: Faker.Person.name(),
           schema: "internet-facing",
@@ -73,30 +72,28 @@ defmodule AwsIngressOperator.TargetGroupsTest do
           security_groups: [vpc.security_group.id]
         )
 
-      [target_group_arn] =
-        ExAws.ElasticLoadBalancingV2.create_target_group(
-          Faker.Person.first_name(),
-          vpc.id
-        )
-        |> ExAws.request!()
-        |> Map.get(:body)
-        |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
+      {:ok, %TargetGroup{target_group_arn: tg_arn}} =
+        TargetGroups.insert_or_update(%TargetGroup{
+          target_group_name: Faker.Person.first_name(),
+          vpc_id: vpc.id
+        })
 
-      ExAws.ElasticLoadBalancingV2.create_target_group(Faker.Person.first_name(), vpc.id)
-
-      lb_arn = load_balancer.load_balancer_arn
+      TargetGroups.insert_or_update(%TargetGroup{
+        target_group_name: Faker.Person.first_name(),
+        vpc_id: vpc.id
+      })
 
       Listeners.insert_or_update(%Listener{
         load_balancer_arn: lb_arn,
         protocol: "HTTP",
         port: 80,
-        default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
+        default_actions: [%{type: "forward", target_group_arn: tg_arn}]
       })
 
       assert {:ok,
               [
                 %TargetGroup{
-                  target_group_arn: ^target_group_arn
+                  target_group_arn: ^tg_arn
                 }
               ]} = TargetGroups.list(load_balancer_arn: lb_arn)
     end
@@ -104,33 +101,29 @@ defmodule AwsIngressOperator.TargetGroupsTest do
 
   describe "get/1" do
     test "given some target groups, returns one by arn", %{default_aws_vpc: vpc} do
-      ExAws.ElasticLoadBalancingV2.create_target_group(
-        Faker.Person.first_name(),
-        vpc.id
-      )
+      TargetGroups.insert_or_update(%TargetGroup{
+        target_group_name: Faker.Person.first_name(),
+        vpc_id: vpc.id
+      })
 
-      [arn] =
-        ExAws.ElasticLoadBalancingV2.create_target_group(
-          Faker.Person.first_name(),
-          vpc.id
-        )
-        |> ExAws.request!()
-        |> Map.get(:body)
-        |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
+      {:ok, %TargetGroup{target_group_arn: arn}} =
+        TargetGroups.insert_or_update(%TargetGroup{
+          target_group_name: Faker.Person.first_name(),
+          vpc_id: vpc.id
+        })
 
       assert {:ok, %TargetGroup{target_group_arn: ^arn}} = TargetGroups.get(arn: arn)
     end
 
     test "given some target groups, returns one by name", %{default_aws_vpc: vpc} do
-      ExAws.ElasticLoadBalancingV2.create_target_group(
-        Faker.Person.first_name(),
-        vpc.id
-      )
+      TargetGroups.insert_or_update(%TargetGroup{
+        target_group_name: Faker.Person.first_name(),
+        vpc_id: vpc.id
+      })
 
       name = Faker.Person.first_name()
 
-      ExAws.ElasticLoadBalancingV2.create_target_group(name, vpc.id)
-      |> ExAws.request!()
+      TargetGroups.insert_or_update(%TargetGroup{target_group_name: name, vpc_id: vpc.id})
 
       assert {:ok, %TargetGroup{target_group_name: ^name}} = TargetGroups.get(name: name)
     end
@@ -159,14 +152,11 @@ defmodule AwsIngressOperator.TargetGroupsTest do
     test "given an existing target group, with an arn provided it updates the target group", %{
       default_aws_vpc: vpc
     } do
-      [arn] =
-        ExAws.ElasticLoadBalancingV2.create_target_group(
-          Faker.Person.first_name(),
-          vpc.id
-        )
-        |> ExAws.request!()
-        |> Map.get(:body)
-        |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
+      {:ok, %TargetGroup{target_group_arn: arn}} =
+        TargetGroups.insert_or_update(%TargetGroup{
+          target_group_name: Faker.Person.first_name(),
+          vpc_id: vpc.id
+        })
 
       assert {:ok,
               %TargetGroup{
@@ -205,13 +195,15 @@ defmodule AwsIngressOperator.TargetGroupsTest do
     test "given a target group that exists, deletes it", %{default_aws_vpc: vpc} do
       {:ok, %TargetGroup{target_group_arn: arn}} =
         TargetGroups.insert_or_update(%TargetGroup{
-              target_group_name: Faker.Person.first_name(),
-              vpc_id: vpc.id
-          })
+          target_group_name: Faker.Person.first_name(),
+          vpc_id: vpc.id
+        })
 
-      assert :ok = TargetGroups.delete(%TargetGroup{
-        target_group_arn: arn
-      })
+      assert :ok =
+               TargetGroups.delete(%TargetGroup{
+                 target_group_arn: arn
+               })
+
       assert {:error, _} = TargetGroups.list(target_group_arn: arn)
     end
   end

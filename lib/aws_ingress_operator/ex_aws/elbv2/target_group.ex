@@ -8,13 +8,13 @@ defmodule AwsIngressOperator.ExAws.Elbv2.TargetGroup do
     aliased_filters = FilterAliases.apply_aliases(action, filters)
 
     return_target_groups = fn
-    %{
-      describe_target_groups_response: %{
-        describe_target_groups_result: %{
-          target_groups: tgs
+      %{
+        describe_target_groups_response: %{
+          describe_target_groups_result: %{
+            target_groups: tgs
+          }
         }
-      }
-    } ->
+      } ->
         tgs || []
     end
 
@@ -24,13 +24,13 @@ defmodule AwsIngressOperator.ExAws.Elbv2.TargetGroup do
 
   def create_target_group!(tg) do
     return_target_group = fn
-    %{
-      create_target_group_response: %{
-        create_target_group_result: %{
-          target_groups: [tg]
+      %{
+        create_target_group_response: %{
+          create_target_group_result: %{
+            target_groups: [tg]
+          }
         }
-      }
-    } ->
+      } ->
         tg
     end
 
