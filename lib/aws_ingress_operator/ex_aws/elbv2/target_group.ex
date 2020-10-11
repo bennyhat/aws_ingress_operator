@@ -43,4 +43,9 @@ defmodule AwsIngressOperator.ExAws.Elbv2.TargetGroup do
     make_request(tg, :modify_target_group)
     |> ExAws.request!()
   end
+
+  def delete_target_group!(tg) do
+    make_request(tg, :delete_target_group)
+    |> ExAws.request!()
+  end
 end

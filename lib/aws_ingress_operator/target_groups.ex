@@ -50,10 +50,9 @@ defmodule AwsIngressOperator.TargetGroups do
     get(arn: existing_target_group.target_group_arn)
   end
 
-  # def delete(listener) do
-  #   ExAws.ElasticLoadBalancingV2.delete_listener(listener.listener_arn)
-  #   |> ExAws.request!()
+  def delete(target_group) do
+    Elbv2.TargetGroup.delete_target_group!(target_group)
 
-  #   :ok
-  # end
+    :ok
+  end
 end

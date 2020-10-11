@@ -201,40 +201,18 @@ defmodule AwsIngressOperator.TargetGroupsTest do
     end
   end
 
-  # describe "delete/1" do
-  #   test "given a listener that exists, deletes it", %{default_aws_vpc: vpc} do
-  #     {:ok, load_balancer} =
-  #       LoadBalancers.create(
-  #         name: Faker.Person.name(),
-  #         schema: "internet-facing",
-  #         subnets: [vpc.subnet.id],
-  #         security_groups: [vpc.security_group.id]
-  #       )
+  describe "delete/1" do
+    test "given a target group that exists, deletes it", %{default_aws_vpc: vpc} do
+      {:ok, %TargetGroup{target_group_arn: arn}} =
+        TargetGroups.insert_or_update(%TargetGroup{
+              target_group_name: Faker.Person.first_name(),
+              vpc_id: vpc.id
+          })
 
-  #     [target_group_arn] =
-  #       ExAws.ElasticLoadBalancingV2.create_target_group(
-  #         Faker.Person.first_name(),
-  #         vpc.id
-  #       )
-  #       |> ExAws.request!()
-  #       |> Map.get(:body)
-  #       |> SweetXml.xpath(~x"//TargetGroupArn/text()"ls)
-
-  #     lb_arn = load_balancer.load_balancer_arn
-
-  #     {:ok, %{listener_arn: arn}} = TargetGroups.insert_or_update(
-  #       %Listener{
-  #         load_balancer_arn: lb_arn,
-  #         protocol: "HTTP",
-  #         port: 80,
-  #         default_actions: [%{type: "forward", target_group_arn: target_group_arn}]
-  #       }
-  #     )
-
-  #     assert :ok = TargetGroups.delete(%Listener{
-  #       listener_arn: arn
-  #     })
-  #     assert {:ok, []} == TargetGroups.list(load_balancer_arn: lb_arn)
-  #   end
-  # end
+      assert :ok = TargetGroups.delete(%TargetGroup{
+        target_group_arn: arn
+      })
+      assert {:error, _} = TargetGroups.list(target_group_arn: arn)
+    end
+  end
 end

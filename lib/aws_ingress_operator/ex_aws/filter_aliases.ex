@@ -21,6 +21,10 @@ defmodule AwsIngressOperator.ExAws.FilterAliases do
         name: :target_group_arns,
         list: true
       },
+      target_group_arn: %{
+        name: :target_group_arns,
+        list: true
+      },
       name: %{
         name: :names,
         list: true
