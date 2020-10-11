@@ -89,6 +89,16 @@ defmodule AwsIngressOperator.ExAws.FilterAliases do
         name: :names,
         list: true
       }
+    },
+    describe_certificate: %{
+      certificate_arn: %{
+        name: :certificate_arn,
+        list: false
+      },
+      arn: %{
+        name: :certificate_arn,
+        list: false
+      }
     }
   }
 

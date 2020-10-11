@@ -1,6 +1,6 @@
 defmodule AwsIngressOperator.LoadBalancers do
   @moduledoc """
-  A repository pattern wrapper for a LoadBalancer inventory
+  A repository pattern wrapper for a Load Balancer inventory
   """
 
   alias AwsIngressOperator.Schemas.LoadBalancer
