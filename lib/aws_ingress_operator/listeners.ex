@@ -5,25 +5,18 @@ defmodule AwsIngressOperator.Listeners do
   alias AwsIngressOperator.Schemas.Listener
   alias AwsIngressOperator.ExAws.Elbv2
 
-  def list(opts \\ []) do
-    case Elbv2.Listener.describe_listeners(opts) do
-      {:ok, listeners} ->
-        listeners =
-          listeners
-          |> Enum.map(&Listener.changeset/1)
-          |> Enum.map(&Ecto.Changeset.apply_changes/1)
+  def list(filter) do
+    listeners = Elbv2.Listener.describe_listeners!(filter)
+    |> Enum.map(&Listener.changeset/1)
+    |> Enum.map(&Ecto.Changeset.apply_changes/1)
 
-        {:ok, listeners}
-
-      error ->
-        error
-    end
+    {:ok, listeners}
   end
 
-  def get(opts \\ []) do
-    case list(opts) do
+  def get(filter) do
+    case list(filter) do
       {:ok, [listener]} -> {:ok, listener}
-      error -> error
+      {:ok, []} -> {:error, :resource_not_found}
     end
   end
 
@@ -32,7 +25,7 @@ defmodule AwsIngressOperator.Listeners do
   def insert_or_update(%{listener_arn: arn} = listener) do
     case get(arn: arn) do
       {:ok, existing_listener} -> update(existing_listener, listener)
-      {:error, _} -> {:error, :resource_not_found}
+      error -> error
     end
   end
 

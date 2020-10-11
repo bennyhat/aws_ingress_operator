@@ -3,7 +3,7 @@ defmodule AwsIngressOperator.ExAws.Elbv2.Listener do
 
   import AwsIngressOperator.ExAws.Elbv2, only: [make_request: 2, make_request: 3]
 
-  def describe_listeners(filters) do
+  def describe_listeners!(filters) do
     action = :describe_listeners
     aliased_filters = FilterAliases.apply_aliases(action, filters)
 
@@ -28,8 +28,10 @@ defmodule AwsIngressOperator.ExAws.Elbv2.Listener do
         listeners || []
     end
 
-    make_request(aliased_filters, action, return_listeners)
-    |> ExAws.request()
+    case make_request(aliased_filters, action, return_listeners) |> ExAws.request() do
+      {:ok, listeners} -> listeners
+      {:error, _} -> []
+    end
   end
 
   def create_listener!(listener) do

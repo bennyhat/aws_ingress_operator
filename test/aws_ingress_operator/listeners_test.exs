@@ -18,10 +18,12 @@ defmodule AwsIngressOperator.ListenersTest do
     } do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
         LoadBalancers.create(
-          name: Faker.Person.name(),
-          schema: "internet-facing",
-          subnets: [vpc.subnet.id],
-          security_groups: [vpc.security_group.id]
+          %{
+            load_balancer_name: Faker.Person.name(),
+            scheme: "internet-facing",
+            subnets: [vpc.subnet.id],
+            security_groups: [vpc.security_group.id]
+          }
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
@@ -50,10 +52,12 @@ defmodule AwsIngressOperator.ListenersTest do
     test "given some listeners, returns list of them by listener arn", %{default_aws_vpc: vpc} do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
         LoadBalancers.create(
-          name: Faker.Person.name(),
-          schema: "internet-facing",
-          subnets: [vpc.subnet.id],
-          security_groups: [vpc.security_group.id]
+          %{
+            load_balancer_name: Faker.Person.name(),
+            scheme: "internet-facing",
+            subnets: [vpc.subnet.id],
+            security_groups: [vpc.security_group.id]
+          }
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
@@ -90,10 +94,12 @@ defmodule AwsIngressOperator.ListenersTest do
     test "given some listeners, returns one by arn", %{default_aws_vpc: vpc} do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
         LoadBalancers.create(
-          name: Faker.Person.name(),
-          schema: "internet-facing",
-          subnets: [vpc.subnet.id],
-          security_groups: [vpc.security_group.id]
+          %{
+            load_balancer_name: Faker.Person.name(),
+            scheme: "internet-facing",
+            subnets: [vpc.subnet.id],
+            security_groups: [vpc.security_group.id]
+          }
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
@@ -125,10 +131,12 @@ defmodule AwsIngressOperator.ListenersTest do
     test "given a non-existent listener, it creates one", %{default_aws_vpc: vpc} do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
         LoadBalancers.create(
-          name: Faker.Person.name(),
-          schema: "internet-facing",
-          subnets: [vpc.subnet.id],
-          security_groups: [vpc.security_group.id]
+          %{
+            load_balancer_name: Faker.Person.name(),
+            scheme: "internet-facing",
+            subnets: [vpc.subnet.id],
+            security_groups: [vpc.security_group.id]
+          }
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
@@ -156,10 +164,12 @@ defmodule AwsIngressOperator.ListenersTest do
     } do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
         LoadBalancers.create(
-          name: Faker.Person.name(),
-          schema: "internet-facing",
-          subnets: [vpc.subnet.id],
-          security_groups: [vpc.security_group.id]
+          %{
+            load_balancer_name: Faker.Person.name(),
+            scheme: "internet-facing",
+            subnets: [vpc.subnet.id],
+            security_groups: [vpc.security_group.id]
+          }
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
@@ -188,10 +198,12 @@ defmodule AwsIngressOperator.ListenersTest do
     } do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
         LoadBalancers.create(
-          name: Faker.Person.name(),
-          schema: "internet-facing",
-          subnets: [vpc.subnet.id],
-          security_groups: [vpc.security_group.id]
+          %{
+            load_balancer_name: Faker.Person.name(),
+            scheme: "internet-facing",
+            subnets: [vpc.subnet.id],
+            security_groups: [vpc.security_group.id]
+          }
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
@@ -234,10 +246,12 @@ defmodule AwsIngressOperator.ListenersTest do
     test "given a listener that exists, deletes it", %{default_aws_vpc: vpc} do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
         LoadBalancers.create(
-          name: Faker.Person.name(),
-          schema: "internet-facing",
-          subnets: [vpc.subnet.id],
-          security_groups: [vpc.security_group.id]
+          %{
+            load_balancer_name: Faker.Person.name(),
+            scheme: "internet-facing",
+            subnets: [vpc.subnet.id],
+            security_groups: [vpc.security_group.id]
+          }
         )
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
