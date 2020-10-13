@@ -6,9 +6,10 @@ defmodule AwsIngressOperator.Listeners do
   alias AwsIngressOperator.ExAws.Elbv2
 
   def list(filter) do
-    listeners = Elbv2.Listener.describe_listeners!(filter)
-    |> Enum.map(&Listener.changeset/1)
-    |> Enum.map(&Ecto.Changeset.apply_changes/1)
+    listeners =
+      Elbv2.Listener.describe_listeners!(filter)
+      |> Enum.map(&Listener.changeset/1)
+      |> Enum.map(&Ecto.Changeset.apply_changes/1)
 
     {:ok, listeners}
   end

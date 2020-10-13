@@ -14,14 +14,12 @@ defmodule AwsIngressOperator.LoadBalancersTest do
     test "given some load balancers, returns list of them", %{default_aws_vpc: vpc} do
       name = Faker.Person.first_name()
 
-      LoadBalancers.create(
-        %LoadBalancer{
-          load_balancer_name: name,
-          scheme: "internal",
-          subnets: [vpc.subnet.id],
-          security_groups: vpc.security_group.id
-        }
-      )
+      LoadBalancers.create(%LoadBalancer{
+        load_balancer_name: name,
+        scheme: "internal",
+        subnets: [vpc.subnet.id],
+        security_groups: vpc.security_group.id
+      })
 
       assert {:ok,
               [
@@ -36,23 +34,19 @@ defmodule AwsIngressOperator.LoadBalancersTest do
     test "given some load balancers, returns them by name", %{default_aws_vpc: vpc} do
       name = Faker.Person.first_name()
 
-      LoadBalancers.create(
-        %LoadBalancer{
-          load_balancer_name: name,
-          scheme: "internal",
-          subnets: [vpc.subnet.id],
-          security_groups: vpc.security_group.id
-        }
-      )
+      LoadBalancers.create(%LoadBalancer{
+        load_balancer_name: name,
+        scheme: "internal",
+        subnets: [vpc.subnet.id],
+        security_groups: vpc.security_group.id
+      })
 
-      LoadBalancers.create(
-        %LoadBalancer{
-          load_balancer_name: Faker.Person.first_name(),
-          scheme: "internal",
-          subnets: [vpc.subnet.id],
-          security_groups: vpc.security_group.id
-        }
-      )
+      LoadBalancers.create(%LoadBalancer{
+        load_balancer_name: Faker.Person.first_name(),
+        scheme: "internal",
+        subnets: [vpc.subnet.id],
+        security_groups: vpc.security_group.id
+      })
 
       assert {:ok,
               [
@@ -65,23 +59,20 @@ defmodule AwsIngressOperator.LoadBalancersTest do
     test "given some load balancers, returns them by arn", %{default_aws_vpc: vpc} do
       name = Faker.Person.first_name()
 
-      {:ok, %LoadBalancer{load_balancer_arn: arn}} = LoadBalancers.create(
-        %LoadBalancer{
+      {:ok, %LoadBalancer{load_balancer_arn: arn}} =
+        LoadBalancers.create(%LoadBalancer{
           load_balancer_name: name,
           scheme: "internal",
           subnets: [vpc.subnet.id],
           security_groups: vpc.security_group.id
-        }
-      )
+        })
 
-      LoadBalancers.create(
-        %LoadBalancer{
-          load_balancer_name: Faker.Person.first_name(),
-          scheme: "internal",
-          subnets: [vpc.subnet.id],
-          security_groups: vpc.security_group.id
-        }
-      )
+      LoadBalancers.create(%LoadBalancer{
+        load_balancer_name: Faker.Person.first_name(),
+        scheme: "internal",
+        subnets: [vpc.subnet.id],
+        security_groups: vpc.security_group.id
+      })
 
       assert {:ok,
               [
@@ -94,23 +85,20 @@ defmodule AwsIngressOperator.LoadBalancersTest do
     test "given some load balancers, returns them by short arn option", %{default_aws_vpc: vpc} do
       name = Faker.Person.first_name()
 
-      {:ok, %LoadBalancer{load_balancer_arn: arn}} = LoadBalancers.create(
-        %LoadBalancer{
+      {:ok, %LoadBalancer{load_balancer_arn: arn}} =
+        LoadBalancers.create(%LoadBalancer{
           load_balancer_name: name,
           scheme: "internal",
           subnets: [vpc.subnet.id],
           security_groups: vpc.security_group.id
-        }
-      )
+        })
 
-      LoadBalancers.create(
-        %LoadBalancer{
-          load_balancer_name: Faker.Person.first_name(),
-          scheme: "internal",
-          subnets: [vpc.subnet.id],
-          security_groups: vpc.security_group.id
-        }
-      )
+      LoadBalancers.create(%LoadBalancer{
+        load_balancer_name: Faker.Person.first_name(),
+        scheme: "internal",
+        subnets: [vpc.subnet.id],
+        security_groups: vpc.security_group.id
+      })
 
       assert {:ok,
               [
@@ -125,23 +113,19 @@ defmodule AwsIngressOperator.LoadBalancersTest do
     test "gets the load balancer in question by name", %{default_aws_vpc: vpc} do
       name = Faker.Person.first_name()
 
-      LoadBalancers.create(
-        %LoadBalancer{
-          load_balancer_name: name,
-          scheme: "internal",
-          subnets: [vpc.subnet.id],
-          security_groups: vpc.security_group.id
-        }
-      )
+      LoadBalancers.create(%LoadBalancer{
+        load_balancer_name: name,
+        scheme: "internal",
+        subnets: [vpc.subnet.id],
+        security_groups: vpc.security_group.id
+      })
 
-      LoadBalancers.create(
-        %LoadBalancer{
-          load_balancer_name: Faker.Person.first_name(),
-          scheme: "internal",
-          subnets: [vpc.subnet.id],
-          security_groups: vpc.security_group.id
-        }
-      )
+      LoadBalancers.create(%LoadBalancer{
+        load_balancer_name: Faker.Person.first_name(),
+        scheme: "internal",
+        subnets: [vpc.subnet.id],
+        security_groups: vpc.security_group.id
+      })
 
       assert {:ok,
               %LoadBalancer{
@@ -150,23 +134,20 @@ defmodule AwsIngressOperator.LoadBalancersTest do
     end
 
     test "gets the load balancer in question by arn", %{default_aws_vpc: vpc} do
-      {:ok, %LoadBalancer{load_balancer_arn: arn}} = LoadBalancers.create(
-        %LoadBalancer{
+      {:ok, %LoadBalancer{load_balancer_arn: arn}} =
+        LoadBalancers.create(%LoadBalancer{
           load_balancer_name: Faker.Person.first_name(),
           scheme: "internal",
           subnets: [vpc.subnet.id],
           security_groups: vpc.security_group.id
-        }
-      )
+        })
 
-      LoadBalancers.create(
-        %LoadBalancer{
-          load_balancer_name: Faker.Person.first_name(),
-          scheme: "internal",
-          subnets: [vpc.subnet.id],
-          security_groups: vpc.security_group.id
-        }
-      )
+      LoadBalancers.create(%LoadBalancer{
+        load_balancer_name: Faker.Person.first_name(),
+        scheme: "internal",
+        subnets: [vpc.subnet.id],
+        security_groups: vpc.security_group.id
+      })
 
       assert {:ok,
               %LoadBalancer{
@@ -183,28 +164,26 @@ defmodule AwsIngressOperator.LoadBalancersTest do
               %LoadBalancer{
                 load_balancer_name: ^name
               }} =
-        LoadBalancers.create(
-          %LoadBalancer{
-            load_balancer_name: name,
-            scheme: "internet-facing",
-            subnets: [vpc.subnet.id],
-            security_groups: [vpc.security_group.id]
-          }
-      )
+               LoadBalancers.create(%LoadBalancer{
+                 load_balancer_name: name,
+                 scheme: "internet-facing",
+                 subnets: [vpc.subnet.id],
+                 security_groups: [vpc.security_group.id]
+               })
     end
+
     # TODO - sad path for already existing
   end
 
   describe "delete/1" do
     test "given a load balancer that exists, deletes it", %{default_aws_vpc: vpc} do
-      {:ok, %LoadBalancer{load_balancer_arn: arn}} = LoadBalancers.create(
-        %LoadBalancer{
+      {:ok, %LoadBalancer{load_balancer_arn: arn}} =
+        LoadBalancers.create(%LoadBalancer{
           load_balancer_name: Faker.Person.first_name(),
           scheme: "internal",
           subnets: [vpc.subnet.id],
           security_groups: vpc.security_group.id
-        }
-      )
+        })
 
       assert :ok = LoadBalancers.delete(%LoadBalancer{load_balancer_arn: arn})
       assert {:ok, []} == LoadBalancers.list()

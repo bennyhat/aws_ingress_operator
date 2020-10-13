@@ -6,9 +6,10 @@ defmodule AwsIngressOperator.TargetGroups do
   alias AwsIngressOperator.ExAws.Elbv2
 
   def list(filter \\ []) do
-    tgs = Elbv2.TargetGroup.describe_target_groups!(filter)
-    |> Enum.map(&TargetGroup.changeset/1)
-    |> Enum.map(&Ecto.Changeset.apply_changes/1)
+    tgs =
+      Elbv2.TargetGroup.describe_target_groups!(filter)
+      |> Enum.map(&TargetGroup.changeset/1)
+      |> Enum.map(&Ecto.Changeset.apply_changes/1)
 
     {:ok, tgs}
   end

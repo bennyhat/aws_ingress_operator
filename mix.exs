@@ -30,7 +30,7 @@ defmodule AwsIngressOperator.MixProject do
       {:jaxon, "~> 1.0"},
       {:k8s, "~> 0.4"},
       {:sweet_xml, "~> 0.6"},
-      {:xml_json, "~> 0.3"},
+      {:xml_json, "~> 0.4"},
       {:checkov, "~> 1.0", only: :test},
       {:divo, "~> 1.1", only: :test},
       {:divo_moto, "~> 0.1.0", only: :test},

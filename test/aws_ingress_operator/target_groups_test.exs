@@ -65,14 +65,12 @@ defmodule AwsIngressOperator.TargetGroupsTest do
       default_aws_vpc: vpc
     } do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
-        LoadBalancers.create(
-          %LoadBalancer{
-            load_balancer_name: Faker.Person.name(),
-            scheme: "internet-facing",
-            subnets: [vpc.subnet.id],
-            security_groups: [vpc.security_group.id]
-          }
-        )
+        LoadBalancers.create(%LoadBalancer{
+          load_balancer_name: Faker.Person.name(),
+          scheme: "internet-facing",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        })
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
         TargetGroups.insert_or_update(%TargetGroup{

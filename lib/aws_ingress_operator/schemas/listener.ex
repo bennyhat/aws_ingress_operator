@@ -4,7 +4,7 @@ defmodule AwsIngressOperator.Schemas.Certificate do
 
   @primary_key {:certificate_arn, :string, autogenerate: false}
   embedded_schema do
-    field(:is_default, :boolean)
+    field :is_default, :boolean
   end
 
   @cast_fields [
@@ -15,7 +15,6 @@ defmodule AwsIngressOperator.Schemas.Certificate do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
@@ -27,8 +26,8 @@ defmodule AwsIngressOperator.Schemas.KeyValuePair do
   import Ecto.Changeset
 
   embedded_schema do
-    field(:key, :string)
-    field(:value, :string)
+    field :key, :string
+    field :value, :string
   end
 
   @cast_fields [
@@ -39,7 +38,6 @@ defmodule AwsIngressOperator.Schemas.KeyValuePair do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
@@ -53,15 +51,15 @@ defmodule AwsIngressOperator.Schemas.Action.AuthenticateCognitoConfig do
   alias AwsIngressOperator.Schemas.KeyValuePair
 
   embedded_schema do
-    field(:on_unauthenticated_request, :string)
-    field(:scope, :string)
-    field(:session_cookie_name, :string)
-    field(:session_timeout, :integer)
-    field(:user_pool_arn, :string)
-    field(:user_pool_client_id, :string)
-    field(:user_pool_domain, :string)
+    field :on_unauthenticated_request, :string
+    field :scope, :string
+    field :session_cookie_name, :string
+    field :session_timeout, :integer
+    field :user_pool_arn, :string
+    field :user_pool_client_id, :string
+    field :user_pool_domain, :string
 
-    embeds_many(:authenticate_request_extra_params, KeyValuePair)
+    embeds_many :authenticate_request_extra_params, KeyValuePair
   end
 
   @cast_fields [
@@ -77,7 +75,6 @@ defmodule AwsIngressOperator.Schemas.Action.AuthenticateCognitoConfig do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
@@ -92,19 +89,19 @@ defmodule AwsIngressOperator.Schemas.Action.AuthenticateOidcConfig do
   alias AwsIngressOperator.Schemas.KeyValuePair
 
   embedded_schema do
-    field(:authorization_endpoint, :string)
-    field(:client_id, :string)
-    field(:client_secret, :string)
-    field(:issuer, :string)
-    field(:on_unauthenticated_request, :string)
-    field(:scope, :string)
-    field(:session_cookie_name, :string)
-    field(:session_timeout, :integer)
-    field(:token_endpoint, :string)
-    field(:use_existing_client_secret, :boolean)
-    field(:user_info_endpoint, :string)
+    field :authorization_endpoint, :string
+    field :client_id, :string
+    field :client_secret, :string
+    field :issuer, :string
+    field :on_unauthenticated_request, :string
+    field :scope, :string
+    field :session_cookie_name, :string
+    field :session_timeout, :integer
+    field :token_endpoint, :string
+    field :use_existing_client_secret, :boolean
+    field :user_info_endpoint, :string
 
-    embeds_many(:authenticate_request_extra_params, KeyValuePair)
+    embeds_many :authenticate_request_extra_params, KeyValuePair
   end
 
   @cast_fields [
@@ -118,13 +115,12 @@ defmodule AwsIngressOperator.Schemas.Action.AuthenticateOidcConfig do
     :session_timeout,
     :token_endpoint,
     :use_existing_client_secret,
-    :user_info_endpoint
+    :user_info_endpoint,
   ]
 
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
@@ -137,9 +133,9 @@ defmodule AwsIngressOperator.Schemas.Action.FixedResponseConfig do
   import Ecto.Changeset
 
   embedded_schema do
-    field(:content_type, :string)
-    field(:message_body, :string)
-    field(:status_code, :string)
+    field :content_type, :string
+    field :message_body, :string
+    field :status_code, :string
   end
 
   @cast_fields [
@@ -151,7 +147,6 @@ defmodule AwsIngressOperator.Schemas.Action.FixedResponseConfig do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
@@ -163,8 +158,8 @@ defmodule AwsIngressOperator.Schemas.Action.ForwardConfig do
   import Ecto.Changeset
 
   embedded_schema do
-    embeds_many(:target_groups, TargetGroup.Tuple)
-    embeds_one(:target_group_stickiness_config, TargetGroup.StickinessConfig)
+    embeds_many :target_groups, TargetGroup.Tuple
+    embeds_one :target_group_stickiness_config, TargetGroup.StickinessConfig
   end
 
   @cast_fields []
@@ -172,7 +167,6 @@ defmodule AwsIngressOperator.Schemas.Action.ForwardConfig do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
@@ -186,12 +180,12 @@ defmodule AwsIngressOperator.Schemas.Action.RedirectConfig do
   import Ecto.Changeset
 
   embedded_schema do
-    field(:host, :string)
-    field(:path, :string)
-    field(:port, :string)
-    field(:protocol, :string)
-    field(:query, :string)
-    field(:status_code, :string)
+    field :host, :string
+    field :path, :string
+    field :port, :string
+    field :protocol, :string
+    field :query, :string
+    field :status_code, :string
   end
 
   @cast_fields [
@@ -200,13 +194,12 @@ defmodule AwsIngressOperator.Schemas.Action.RedirectConfig do
     :port,
     :protocol,
     :query,
-    :status_code
+    :status_code,
   ]
 
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
@@ -224,15 +217,15 @@ defmodule AwsIngressOperator.Schemas.Action do
   alias AwsIngressOperator.Schemas.Action.RedirectConfig
 
   embedded_schema do
-    field(:order, :integer)
-    field(:target_group_arn, :string)
-    field(:type, :string)
+    field :order, :integer
+    field :target_group_arn, :string
+    field :type, :string
 
-    embeds_one(:authenticate_cognito_config, AuthenticateCognitoConfig)
-    embeds_one(:authenticate_oidc_config, AuthenticateOidcConfig)
-    embeds_one(:fixed_response_config, FixedResponseConfig)
-    embeds_one(:forward_config, ForwardConfig)
-    embeds_one(:redirect_config, RedirectConfig)
+    embeds_one :authenticate_cognito_config, AuthenticateCognitoConfig
+    embeds_one :authenticate_oidc_config, AuthenticateOidcConfig
+    embeds_one :fixed_response_config, FixedResponseConfig
+    embeds_one :forward_config, ForwardConfig
+    embeds_one :redirect_config, RedirectConfig
   end
 
   @cast_fields [
@@ -244,7 +237,6 @@ defmodule AwsIngressOperator.Schemas.Action do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
@@ -260,13 +252,13 @@ defmodule AwsIngressOperator.Schemas.Listener do
 
   @primary_key {:listener_arn, :string, autogenerate: false}
   embedded_schema do
-    embeds_many(:certificates, Certificate)
-    embeds_many(:default_actions, Action)
+    embeds_many :certificates, Certificate
+    embeds_many :default_actions, Action
 
-    field(:port, :integer)
-    field(:protocol, :string)
-    field(:ssl_policy, :string)
-    field(:load_balancer_arn, :string)
+    field :port, :integer
+    field :protocol, :string
+    field :ssl_policy, :string
+    field :load_balancer_arn, :string
   end
 
   @cast_fields [
@@ -280,7 +272,6 @@ defmodule AwsIngressOperator.Schemas.Listener do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)

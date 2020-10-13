@@ -99,6 +99,8 @@ defmodule AwsIngressOperator.ExAws.FilterAliases do
         name: :certificate_arn,
         list: false
       }
+    },
+    describe_security_groups: %{
     }
   }
 

@@ -8,11 +8,14 @@ defmodule AwsIngressOperator.ExAws.ACM.Certificate do
 
     case ExAws.ACM.describe_certificate(arn) |> ExAws.request() do
       {:ok, certificate} ->
-        certificate = AtomicMap.convert(certificate, safe: false)
-        |> Map.get(:certificate)
+        certificate =
+          AtomicMap.convert(certificate, safe: false)
+          |> Map.get(:certificate)
+
         {:ok, certificate}
 
-      error -> error
+      error ->
+        error
     end
   end
 end

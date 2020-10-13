@@ -17,14 +17,12 @@ defmodule AwsIngressOperator.ListenersTest do
       default_aws_vpc: vpc
     } do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
-        LoadBalancers.create(
-          %{
-            load_balancer_name: Faker.Person.name(),
-            scheme: "internet-facing",
-            subnets: [vpc.subnet.id],
-            security_groups: [vpc.security_group.id]
-          }
-        )
+        LoadBalancers.create(%{
+          load_balancer_name: Faker.Person.name(),
+          scheme: "internet-facing",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        })
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
         TargetGroups.insert_or_update(%TargetGroup{
@@ -51,14 +49,12 @@ defmodule AwsIngressOperator.ListenersTest do
 
     test "given some listeners, returns list of them by listener arn", %{default_aws_vpc: vpc} do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
-        LoadBalancers.create(
-          %{
-            load_balancer_name: Faker.Person.name(),
-            scheme: "internet-facing",
-            subnets: [vpc.subnet.id],
-            security_groups: [vpc.security_group.id]
-          }
-        )
+        LoadBalancers.create(%{
+          load_balancer_name: Faker.Person.name(),
+          scheme: "internet-facing",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        })
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
         TargetGroups.insert_or_update(%TargetGroup{
@@ -93,14 +89,12 @@ defmodule AwsIngressOperator.ListenersTest do
   describe "get/1" do
     test "given some listeners, returns one by arn", %{default_aws_vpc: vpc} do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
-        LoadBalancers.create(
-          %{
-            load_balancer_name: Faker.Person.name(),
-            scheme: "internet-facing",
-            subnets: [vpc.subnet.id],
-            security_groups: [vpc.security_group.id]
-          }
-        )
+        LoadBalancers.create(%{
+          load_balancer_name: Faker.Person.name(),
+          scheme: "internet-facing",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        })
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
         TargetGroups.insert_or_update(%TargetGroup{
@@ -130,14 +124,12 @@ defmodule AwsIngressOperator.ListenersTest do
   describe "insert_or_update/1" do
     test "given a non-existent listener, it creates one", %{default_aws_vpc: vpc} do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
-        LoadBalancers.create(
-          %{
-            load_balancer_name: Faker.Person.name(),
-            scheme: "internet-facing",
-            subnets: [vpc.subnet.id],
-            security_groups: [vpc.security_group.id]
-          }
-        )
+        LoadBalancers.create(%{
+          load_balancer_name: Faker.Person.name(),
+          scheme: "internet-facing",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        })
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
         TargetGroups.insert_or_update(%TargetGroup{
@@ -163,14 +155,12 @@ defmodule AwsIngressOperator.ListenersTest do
       default_aws_vpc: vpc
     } do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
-        LoadBalancers.create(
-          %{
-            load_balancer_name: Faker.Person.name(),
-            scheme: "internet-facing",
-            subnets: [vpc.subnet.id],
-            security_groups: [vpc.security_group.id]
-          }
-        )
+        LoadBalancers.create(%{
+          load_balancer_name: Faker.Person.name(),
+          scheme: "internet-facing",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        })
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
         TargetGroups.insert_or_update(%TargetGroup{
@@ -197,14 +187,12 @@ defmodule AwsIngressOperator.ListenersTest do
       default_aws_vpc: vpc
     } do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
-        LoadBalancers.create(
-          %{
-            load_balancer_name: Faker.Person.name(),
-            scheme: "internet-facing",
-            subnets: [vpc.subnet.id],
-            security_groups: [vpc.security_group.id]
-          }
-        )
+        LoadBalancers.create(%{
+          load_balancer_name: Faker.Person.name(),
+          scheme: "internet-facing",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        })
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
         TargetGroups.insert_or_update(%TargetGroup{
@@ -245,14 +233,12 @@ defmodule AwsIngressOperator.ListenersTest do
   describe "delete/1" do
     test "given a listener that exists, deletes it", %{default_aws_vpc: vpc} do
       {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
-        LoadBalancers.create(
-          %{
-            load_balancer_name: Faker.Person.name(),
-            scheme: "internet-facing",
-            subnets: [vpc.subnet.id],
-            security_groups: [vpc.security_group.id]
-          }
-        )
+        LoadBalancers.create(%{
+          load_balancer_name: Faker.Person.name(),
+          scheme: "internet-facing",
+          subnets: [vpc.subnet.id],
+          security_groups: [vpc.security_group.id]
+        })
 
       {:ok, %TargetGroup{target_group_arn: tg_arn}} =
         TargetGroups.insert_or_update(%TargetGroup{
