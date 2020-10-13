@@ -13,4 +13,11 @@ defmodule AwsIngressOperator.SecurityGroups do
 
     {:ok, tgs}
   end
+
+  def get(filter) do
+    case list(filter) do
+      {:ok, [sg]} -> {:ok, sg}
+      {:ok, []} -> {:error, :resource_not_found}
+    end
+  end
 end

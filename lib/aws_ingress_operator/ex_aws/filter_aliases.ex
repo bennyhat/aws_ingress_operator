@@ -101,6 +101,34 @@ defmodule AwsIngressOperator.ExAws.FilterAliases do
       }
     },
     describe_security_groups: %{
+      id: %{
+        name: :group_id,
+        list: true
+      },
+      ids: %{
+        name: :group_id,
+        list: true
+      },
+      group_ids: %{
+        name: :group_id,
+        list: true
+      },
+      group_id: %{
+        name: :group_id,
+        list: true
+      },
+      group_names: %{
+        name: :group_names,
+        list: true
+      },
+      group_name: %{
+        name: :group_name,
+        list: true
+      },
+      filter: %{
+        name: :filter,
+        list: true
+      }
     }
   }
 

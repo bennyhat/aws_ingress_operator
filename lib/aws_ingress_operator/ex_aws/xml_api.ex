@@ -1,8 +1,8 @@
 defmodule AwsIngressOperator.ExAws.XmlApi do
-  def build_params(tg) do
+  def build_params(tg, list_element_names \\ ["member"]) do
     camel_keyed = to_camel_key(tg)
 
-    XmlJson.AwsApi.serialize_as_params!(camel_keyed)
+    XmlJson.AwsApi.serialize_as_params!(camel_keyed, list_element_names: list_element_names)
   end
 
   def parser({:ok, %{body: body}}, _, unpacker, list_element_names \\ ["member"]) do

@@ -1,6 +1,7 @@
 defmodule AwsIngressOperator.SecurityGroupsTest do
   @moduledoc false
   use ExUnit.Case
+  import SweetXml
   use AwsIngressOperator.Test.Support.MotoCase, url: "http://localhost:5000"
 
   alias AwsIngressOperator.SecurityGroups
@@ -15,81 +16,58 @@ defmodule AwsIngressOperator.SecurityGroupsTest do
       assert {:ok, [_default_sg, %SecurityGroup{vpc_id: ^vpc_id}]} = SecurityGroups.list()
     end
 
-    # test "given some listeners, returns list of them by listener arn", %{default_aws_vpc: vpc} do
-    #   {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
-    #     LoadBalancers.create(
-    #       %{
-    #         load_balancer_name: Faker.Person.name(),
-    #         scheme: "internet-facing",
-    #         subnets: [vpc.subnet.id],
-    #         security_groups: [vpc.security_group.id]
-    #       }
-    #     )
+    test "given some security groups, returns list of them by id" do
+      name = Faker.Person.first_name()
+      description = Faker.Person.first_name()
+      id = ExAws.EC2.create_security_group(name, description)
+      |> ExAws.request!()
+      |> Map.get(:body)
+      |> SweetXml.xpath(~x"//groupId/text()"s)
 
-    #   {:ok, %TargetGroup{target_group_arn: tg_arn}} =
-    #     TargetGroups.insert_or_update(%TargetGroup{
-    #       target_group_name: Faker.Person.first_name(),
-    #       vpc_id: vpc.id
-    #     })
 
-    #   {:ok, %{listener_arn: arn}} =
-    #     SecurityGroups.insert_or_update(%SecurityGroup{
-    #       load_balancer_arn: lb_arn,
-    #       protocol: "HTTP",
-    #       port: 80,
-    #       default_actions: [%{type: "forward", target_group_arn: tg_arn}]
-    #     })
+      assert {:ok, [%SecurityGroup{group_id: ^id}]} = SecurityGroups.list(group_id: id)
+    end
 
-    #   SecurityGroups.insert_or_update(%SecurityGroup{
-    #     load_balancer_arn: lb_arn,
-    #     protocol: "HTTP",
-    #     port: 80,
-    #     default_actions: [%{type: "forward", target_group_arn: tg_arn}]
-    #   })
+    test "given some security groups, returns list of them by name" do
+      name = Faker.Person.first_name()
+      description = Faker.Person.first_name()
+      ExAws.EC2.create_security_group(name, description)
+      |> ExAws.request!()
 
-    #   assert {:ok,
-    #           [
-    #             %SecurityGroup{
-    #               listener_arn: ^arn
-    #             }
-    #           ]} = SecurityGroups.list(listener_arns: [arn])
-    # end
+      assert {:ok, [%SecurityGroup{group_name: ^name}]} = SecurityGroups.list(group_name: name)
+    end
+
+    test "given some security groups, returns list of them by filter" do
+      name = Faker.Person.first_name()
+      description = Faker.Person.first_name()
+      ExAws.EC2.create_security_group(name, description)
+      |> ExAws.request!()
+
+      assert {:ok, [%SecurityGroup{group_name: ^name}]} = SecurityGroups.list(filter: [%{name: "description", value: description}])
+    end
   end
 
-  # describe "get/1" do
-  #   test "given some listeners, returns one by arn", %{default_aws_vpc: vpc} do
-  #     {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
-  #       LoadBalancers.create(
-  #         %{
-  #           load_balancer_name: Faker.Person.name(),
-  #           scheme: "internet-facing",
-  #           subnets: [vpc.subnet.id],
-  #           security_groups: [vpc.security_group.id]
-  #         }
-  #       )
+  describe "get/1" do
+    test "given some security groups, returns one by id" do
+      name = Faker.Person.first_name()
+      description = Faker.Person.first_name()
+      id = ExAws.EC2.create_security_group(name, description)
+      |> ExAws.request!()
+      |> Map.get(:body)
+      |> SweetXml.xpath(~x"//groupId/text()"s)
 
-  #     {:ok, %TargetGroup{target_group_arn: tg_arn}} =
-  #       TargetGroups.insert_or_update(%TargetGroup{
-  #         target_group_name: Faker.Person.first_name(),
-  #         vpc_id: vpc.id
-  #       })
+      assert {:ok, %SecurityGroup{group_id: ^id}} = SecurityGroups.get(group_id: id)
+    end
 
-  #     SecurityGroups.insert_or_update(%SecurityGroup{
-  #       load_balancer_arn: lb_arn,
-  #       protocol: "HTTP",
-  #       port: 80,
-  #       default_actions: [%{type: "forward", target_group_arn: tg_arn}]
-  #     })
+    test "given some security groups, returns one by name" do
+      name = Faker.Person.first_name()
+      description = Faker.Person.first_name()
+      id = ExAws.EC2.create_security_group(name, description)
+      |> ExAws.request!()
+      |> Map.get(:body)
+      |> SweetXml.xpath(~x"//groupId/text()"s)
 
-  #     {:ok, %{listener_arn: arn}} =
-  #       SecurityGroups.insert_or_update(%SecurityGroup{
-  #         load_balancer_arn: lb_arn,
-  #         protocol: "HTTP",
-  #         port: 80,
-  #         default_actions: [%{type: "forward", target_group_arn: tg_arn}]
-  #       })
-
-  #     assert {:ok, %SecurityGroup{listener_arn: ^arn}} = SecurityGroups.get(arn: arn)
-  #   end
-  # end
+      assert {:ok, %SecurityGroup{group_id: ^id}} = SecurityGroups.get(group_name: name)
+    end
+  end
 end

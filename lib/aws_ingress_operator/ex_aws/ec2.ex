@@ -10,7 +10,7 @@ defmodule AwsIngressOperator.ExAws.EC2 do
     %ExAws.Operation.Query{
       action: action,
       content_encoding: "identity",
-      params: Map.merge(main_params, XmlApi.build_params(model)),
+      params: Map.merge(main_params, XmlApi.build_params(model, [""])),
       parser: &XmlApi.parser(&1, &2, unpacker, ["item"]),
       path: "/",
       service: :ec2
