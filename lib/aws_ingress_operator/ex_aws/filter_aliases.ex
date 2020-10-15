@@ -129,6 +129,28 @@ defmodule AwsIngressOperator.ExAws.FilterAliases do
         name: :filter,
         list: true
       }
+    },
+    describe_subnets: %{
+      id: %{
+        name: :subnet_id,
+        list: true
+      },
+      ids: %{
+        name: :subnet_id,
+        list: true
+      },
+      subnet_ids: %{
+        name: :subnet_id,
+        list: true
+      },
+      subnet_id: %{
+        name: :subnet_id,
+        list: true
+      },
+      filter: %{
+        name: :filter,
+        list: true
+      }
     }
   }
 
