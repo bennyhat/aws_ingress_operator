@@ -48,27 +48,19 @@ defmodule AwsIngressOperator.SubnetsTest do
     end
   end
 
-  # describe "get/1" do
-  #   test "given some security groups, returns one by id" do
-  #     name = Faker.Person.first_name()
-  #     description = Faker.Person.first_name()
-  #     id = ExAws.EC2.create_subnet(name, description)
-  #     |> ExAws.request!()
-  #     |> Map.get(:body)
-  #     |> SweetXml.xpath(~x"//groupId/text()"s)
+  describe "get/1" do
+    test "given some subnets, returns one by id", %{default_aws_vpc: vpc} do
+      cidr_block = "172.31.255.0/24"
 
-  #     assert {:ok, %Subnet{group_id: ^id}} = Subnets.get(group_id: id)
-  #   end
+      id = ExAws.EC2.create_subnet(
+        vpc.id,
+        cidr_block
+      )
+      |> ExAws.request!()
+      |> Map.get(:body)
+      |> SweetXml.xpath(~x"//subnetId/text()"s)
 
-  #   test "given some security groups, returns one by name" do
-  #     name = Faker.Person.first_name()
-  #     description = Faker.Person.first_name()
-  #     id = ExAws.EC2.create_subnet(name, description)
-  #     |> ExAws.request!()
-  #     |> Map.get(:body)
-  #     |> SweetXml.xpath(~x"//groupId/text()"s)
-
-  #     assert {:ok, %Subnet{group_id: ^id}} = Subnets.get(group_name: name)
-  #   end
-  # end
+      assert {:ok, %Subnet{subnet_id: ^id}} = Subnets.get(id: id)
+    end
+  end
 end
