@@ -80,6 +80,8 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
   use Ecto.Schema
   import Ecto.Changeset
 
+  alias AwsIngressOperator.Subnets
+
   alias AwsIngressOperator.Schemas.AvailabilityZone
   alias AwsIngressOperator.Schemas.Listener
   alias AwsIngressOperator.Schemas.State
@@ -119,11 +121,29 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def changeset(original, %_struct{} = changes), do: changeset(original, Map.from_struct(changes))
 
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
     |> cast_embed(:availability_zones)
     |> cast_embed(:state)
+    |> validate_subnets_exist(:subnets)
+  end
+
+  def validate_subnets_exist(changeset, field, options \\ []) do
+    validate_change(changeset, field, fn _, ids ->
+      not_subnets = Enum.reject(ids, fn id ->
+        case Subnets.get(id: id) do
+          {:ok, _} -> true
+          _ -> false
+        end
+      end)
+      if length(not_subnets) > 0 do
+        [{field, options[:message] || "These are not subnets: #{inspect(not_subnets)}"}]
+      else
+        []
+      end
+    end)
   end
 end

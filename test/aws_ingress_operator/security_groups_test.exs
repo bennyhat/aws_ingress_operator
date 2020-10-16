@@ -19,11 +19,12 @@ defmodule AwsIngressOperator.SecurityGroupsTest do
     test "given some security groups, returns list of them by id" do
       name = Faker.Person.first_name()
       description = Faker.Person.first_name()
-      id = ExAws.EC2.create_security_group(name, description)
-      |> ExAws.request!()
-      |> Map.get(:body)
-      |> SweetXml.xpath(~x"//groupId/text()"s)
 
+      id =
+        ExAws.EC2.create_security_group(name, description)
+        |> ExAws.request!()
+        |> Map.get(:body)
+        |> SweetXml.xpath(~x"//groupId/text()"s)
 
       assert {:ok, [%SecurityGroup{group_id: ^id}]} = SecurityGroups.list(group_id: id)
     end
@@ -31,6 +32,7 @@ defmodule AwsIngressOperator.SecurityGroupsTest do
     test "given some security groups, returns list of them by name" do
       name = Faker.Person.first_name()
       description = Faker.Person.first_name()
+
       ExAws.EC2.create_security_group(name, description)
       |> ExAws.request!()
 
@@ -40,10 +42,12 @@ defmodule AwsIngressOperator.SecurityGroupsTest do
     test "given some security groups, returns list of them by filter" do
       name = Faker.Person.first_name()
       description = Faker.Person.first_name()
+
       ExAws.EC2.create_security_group(name, description)
       |> ExAws.request!()
 
-      assert {:ok, [%SecurityGroup{group_name: ^name}]} = SecurityGroups.list(filter: [%{name: "description", value: description}])
+      assert {:ok, [%SecurityGroup{group_name: ^name}]} =
+               SecurityGroups.list(filter: [%{name: "description", value: description}])
     end
   end
 
@@ -51,10 +55,12 @@ defmodule AwsIngressOperator.SecurityGroupsTest do
     test "given some security groups, returns one by id" do
       name = Faker.Person.first_name()
       description = Faker.Person.first_name()
-      id = ExAws.EC2.create_security_group(name, description)
-      |> ExAws.request!()
-      |> Map.get(:body)
-      |> SweetXml.xpath(~x"//groupId/text()"s)
+
+      id =
+        ExAws.EC2.create_security_group(name, description)
+        |> ExAws.request!()
+        |> Map.get(:body)
+        |> SweetXml.xpath(~x"//groupId/text()"s)
 
       assert {:ok, %SecurityGroup{group_id: ^id}} = SecurityGroups.get(group_id: id)
     end
@@ -62,10 +68,12 @@ defmodule AwsIngressOperator.SecurityGroupsTest do
     test "given some security groups, returns one by name" do
       name = Faker.Person.first_name()
       description = Faker.Person.first_name()
-      id = ExAws.EC2.create_security_group(name, description)
-      |> ExAws.request!()
-      |> Map.get(:body)
-      |> SweetXml.xpath(~x"//groupId/text()"s)
+
+      id =
+        ExAws.EC2.create_security_group(name, description)
+        |> ExAws.request!()
+        |> Map.get(:body)
+        |> SweetXml.xpath(~x"//groupId/text()"s)
 
       assert {:ok, %SecurityGroup{group_id: ^id}} = SecurityGroups.get(group_name: name)
     end

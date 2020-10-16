@@ -13,7 +13,7 @@ defmodule AwsIngressOperator.SubnetsTest do
     } do
       vpc_id = vpc.id
 
-      assert {:ok, [%Subnet{vpc_id: ^vpc_id}| _] = subnets} = Subnets.list()
+      assert {:ok, [%Subnet{vpc_id: ^vpc_id} | _] = subnets} = Subnets.list()
       assert length(subnets) == 6
     end
 
@@ -21,13 +21,14 @@ defmodule AwsIngressOperator.SubnetsTest do
       # moto "should" assign the private block to this VPC
       cidr_block = "172.31.255.0/24"
 
-      id = ExAws.EC2.create_subnet(
-        vpc.id,
-        cidr_block
-      )
-      |> ExAws.request!()
-      |> Map.get(:body)
-      |> SweetXml.xpath(~x"//subnetId/text()"s)
+      id =
+        ExAws.EC2.create_subnet(
+          vpc.id,
+          cidr_block
+        )
+        |> ExAws.request!()
+        |> Map.get(:body)
+        |> SweetXml.xpath(~x"//subnetId/text()"s)
 
       assert {:ok, [%Subnet{subnet_id: ^id}]} = Subnets.list(subnet_id: id)
     end
@@ -43,8 +44,9 @@ defmodule AwsIngressOperator.SubnetsTest do
 
       assert {:ok, subnets} = Subnets.list(filter: [%{name: "vpc-id", value: vpc.id}])
 
-      assert 7 == Enum.filter(subnets, fn subnet -> subnet.vpc_id == vpc.id end)
-      |> length()
+      assert 7 ==
+               Enum.filter(subnets, fn subnet -> subnet.vpc_id == vpc.id end)
+               |> length()
     end
   end
 
@@ -52,15 +54,20 @@ defmodule AwsIngressOperator.SubnetsTest do
     test "given some subnets, returns one by id", %{default_aws_vpc: vpc} do
       cidr_block = "172.31.255.0/24"
 
-      id = ExAws.EC2.create_subnet(
-        vpc.id,
-        cidr_block
-      )
-      |> ExAws.request!()
-      |> Map.get(:body)
-      |> SweetXml.xpath(~x"//subnetId/text()"s)
+      id =
+        ExAws.EC2.create_subnet(
+          vpc.id,
+          cidr_block
+        )
+        |> ExAws.request!()
+        |> Map.get(:body)
+        |> SweetXml.xpath(~x"//subnetId/text()"s)
 
       assert {:ok, %Subnet{subnet_id: ^id}} = Subnets.get(id: id)
+    end
+
+    test "does not blow up when subnet id doesn't exist" do
+      assert {:error, _} = Subnets.get(id: "cannot-exist")
     end
   end
 end

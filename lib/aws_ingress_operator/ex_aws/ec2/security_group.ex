@@ -6,11 +6,11 @@ defmodule AwsIngressOperator.ExAws.EC2.SecurityGroup do
 
   def describe_security_groups!(filters) do
     return_security_groups = fn
-    %{
-      describe_security_groups_response: %{
-        security_group_info: security_groups
-      }
-    } ->
+      %{
+        describe_security_groups_response: %{
+          security_group_info: security_groups
+        }
+      } ->
         security_groups || []
     end
 

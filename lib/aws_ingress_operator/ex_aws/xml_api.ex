@@ -58,5 +58,4 @@ defmodule AwsIngressOperator.ExAws.XmlApi do
   end
 
   defp to_camel_key(value), do: value
-
 end

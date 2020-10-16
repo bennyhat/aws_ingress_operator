@@ -23,9 +23,17 @@ defmodule AwsIngressOperator.LoadBalancers do
   end
 
   def create(load_balancer) do
-    %{load_balancer_arn: arn} = Elbv2.LoadBalancer.create_load_balancer!(load_balancer)
+    changeset = LoadBalancer.changeset(load_balancer)
 
-    get(arn: arn)
+    case changeset.valid? do
+      false ->
+        {:error, changeset.errors}
+
+      true ->
+        %{load_balancer_arn: arn} = Elbv2.LoadBalancer.create_load_balancer!(load_balancer)
+
+        get(arn: arn)
+    end
   end
 
   def delete(load_balancer) do

@@ -89,7 +89,7 @@ defmodule AwsIngressOperator.Schemas.UserIdGroupPair do
     :group_name,
     :peering_status,
     :user_id,
-    :vpc_id,
+    :vpc_id
   ]
 
   use Accessible
@@ -165,6 +165,7 @@ defmodule AwsIngressOperator.Schemas.IpPermission do
     |> cast_embed(:prefix_list_ids)
   end
 end
+
 defmodule AwsIngressOperator.Schemas.SecurityGroup do
   use Ecto.Schema
   import Ecto.Changeset
@@ -172,7 +173,8 @@ defmodule AwsIngressOperator.Schemas.SecurityGroup do
   alias AwsIngressOperator.Schemas.IpPermission
   alias AwsIngressOperator.Schemas.Tag
 
-  embedded_schema do field(:group_description, :string)
+  embedded_schema do
+    field(:group_description, :string)
     field(:group_id, :string)
     field(:group_name, :string)
     field(:owner_id, :string)
