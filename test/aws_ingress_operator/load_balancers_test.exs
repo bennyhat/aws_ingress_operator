@@ -120,7 +120,7 @@ defmodule AwsIngressOperator.LoadBalancersTest do
     end
 
     test "validates security groups", %{default_aws_vpc: vpc} do
-      assert {:error, []} ==
+      assert {:error, [{:security_groups, _}]} =
         LoadBalancers.create(%LoadBalancer{
               load_balancer_name: Faker.Person.first_name(),
               scheme: "internet-facing",

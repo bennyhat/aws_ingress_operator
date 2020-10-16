@@ -81,6 +81,7 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
   import Ecto.Changeset
 
   alias AwsIngressOperator.Subnets
+  alias AwsIngressOperator.SecurityGroups
 
   alias AwsIngressOperator.Schemas.AvailabilityZone
   alias AwsIngressOperator.Schemas.Listener
@@ -128,21 +129,34 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
     |> cast(changes, @cast_fields)
     |> cast_embed(:availability_zones)
     |> cast_embed(:state)
-    |> validate_subnets_exist(:subnets)
+    |> validate_aws_resource_exists(:subnets)
+    |> validate_aws_resource_exists(:security_groups)
   end
 
-  def validate_subnets_exist(changeset, field, options \\ []) do
-    validate_change(changeset, field, fn _, ids ->
-      not_subnets = Enum.reject(ids, fn id ->
-        case Subnets.get(id: id) do
-          {:ok, _} -> true
-          _ -> false
-        end
-      end)
-      if length(not_subnets) > 0 do
-        [{field, options[:message] || "These are not subnets: #{inspect(not_subnets)}"}]
-      else
-        []
+  def validate_aws_resource_exists(changeset, field, options \\ []) do
+    validate_change(changeset, field, fn field_name, ids ->
+      case missing_resources(field_name, ids) do
+        [] -> []
+        missing ->
+          [{field, options[:message] || "These #{inspect(field)} do not exist: #{inspect(missing)}"}]
+      end
+    end)
+  end
+
+  defp missing_resources(:security_groups, ids) do
+    Enum.reject(ids, fn id ->
+      case SecurityGroups.get(id: id) do
+        {:ok, _} -> true
+        _ -> false
+      end
+    end)
+  end
+
+  defp missing_resources(:subnets, ids) do
+    Enum.reject(ids, fn id ->
+      case Subnets.get(id: id) do
+        {:ok, _} -> true
+        _ -> false
       end
     end)
   end

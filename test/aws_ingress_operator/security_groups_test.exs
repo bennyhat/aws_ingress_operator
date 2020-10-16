@@ -77,5 +77,9 @@ defmodule AwsIngressOperator.SecurityGroupsTest do
 
       assert {:ok, %SecurityGroup{group_id: ^id}} = SecurityGroups.get(group_name: name)
     end
+
+    test "does not blow up when security group doesn't exist" do
+      assert {:error, _} = SecurityGroups.get(id: "cannot-exist")
+    end
   end
 end
