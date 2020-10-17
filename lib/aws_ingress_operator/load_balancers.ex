@@ -27,6 +27,8 @@ defmodule AwsIngressOperator.LoadBalancers do
   def create(load_balancer) do
     changeset = LoadBalancer.changeset(load_balancer)
     |> validate_aws_resource_missing(:load_balancer_name)
+    |> validate_aws_resource_exists(:subnets)
+    |> validate_aws_resource_exists(:security_groups)
 
     case changeset.valid? do
       false ->

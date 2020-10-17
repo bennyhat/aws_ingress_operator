@@ -117,8 +117,6 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
   use Ecto.Schema
   import Ecto.Changeset
 
-  import AwsIngressOperator.Schemas.Validations
-
   alias AwsIngressOperator.Schemas.AvailabilityZone
   alias AwsIngressOperator.Schemas.Listener
   alias AwsIngressOperator.Schemas.State
@@ -168,8 +166,6 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
     |> cast_embed(:availability_zones)
     |> cast_embed(:subnet_mappings)
     |> cast_embed(:state)
-    |> validate_aws_resource_exists(:subnets)
-    |> validate_aws_resource_exists(:security_groups)
     |> validate_inclusion(:type, ["network", "application"])
     |> validate_inclusion(:ip_address_type, ["ipv4", "dualstack"])
     |> validate_inclusion(:scheme, ["internal", "internet-facing"])
