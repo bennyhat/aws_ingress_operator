@@ -6,12 +6,12 @@ defmodule AwsIngressOperator.SecurityGroups do
   alias AwsIngressOperator.ExAws.EC2
 
   def list(filter \\ []) do
-    tgs =
+    sgs =
       EC2.SecurityGroup.describe_security_groups!(filter)
       |> Enum.map(&SecurityGroup.changeset/1)
       |> Enum.map(&Ecto.Changeset.apply_changes/1)
 
-    {:ok, tgs}
+    {:ok, sgs}
   end
 
   def get(filter) do

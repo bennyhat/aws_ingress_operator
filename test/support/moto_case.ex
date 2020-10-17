@@ -14,7 +14,6 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
 
   using opts do
     url = Keyword.get(opts, :url)
-
     quote do
       import AwsIngressOperator.Test.Support.MotoCase
 

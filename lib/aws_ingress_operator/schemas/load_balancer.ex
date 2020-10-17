@@ -1,3 +1,29 @@
+defmodule AwsIngressOperator.Schemas.SubnetMapping do
+  use Ecto.Schema
+  import Ecto.Changeset
+
+  embedded_schema do
+    field(:allocation_id, :string)
+    field(:private_ipv4_address, :string)
+    field(:subnet_id, :string)
+  end
+
+  use Accessible
+
+  @cast_fields [
+    :allocation_id,
+    :private_ipv4_address,
+    :subnet_id
+  ]
+
+  def changeset(changes), do: changeset(%__MODULE__{}, changes)
+
+  def changeset(original, changes) do
+    original
+    |> cast(changes, @cast_fields)
+  end
+end
+
 defmodule AwsIngressOperator.Schemas.AvailabilityZone do
   use Ecto.Schema
   import Ecto.Changeset
@@ -33,7 +59,10 @@ defmodule AwsIngressOperator.Schemas.Address do
   @primary_key {:allocation_id, :string, autogenerate: false}
   embedded_schema do
     field(:ip_address, :string)
+    field(:private_ip_address, :string)
     field(:private_ipv4_address, :string)
+    field(:public_ip, :string)
+    field(:domain, :string)
   end
 
   use Accessible
@@ -41,7 +70,10 @@ defmodule AwsIngressOperator.Schemas.Address do
   @cast_fields [
     :allocation_id,
     :ip_address,
-    :private_ipv4_address
+    :private_ip_address,
+    :private_ipv4_address,
+    :public_ip,
+    :domain
   ]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
@@ -80,12 +112,12 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
   use Ecto.Schema
   import Ecto.Changeset
 
-  alias AwsIngressOperator.Subnets
-  alias AwsIngressOperator.SecurityGroups
+  import AwsIngressOperator.Schemas.Validations
 
   alias AwsIngressOperator.Schemas.AvailabilityZone
   alias AwsIngressOperator.Schemas.Listener
   alias AwsIngressOperator.Schemas.State
+  alias AwsIngressOperator.Schemas.SubnetMapping
 
   @primary_key {:load_balancer_arn, :string, autogenerate: false}
   embedded_schema do
@@ -103,6 +135,7 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
     embeds_one(:state, State)
     embeds_many(:availability_zones, AvailabilityZone)
     embeds_many(:listeners, Listener)
+    embeds_many(:subnet_mappings, SubnetMapping)
   end
 
   @cast_fields [
@@ -128,36 +161,12 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
     original
     |> cast(changes, @cast_fields)
     |> cast_embed(:availability_zones)
+    |> cast_embed(:subnet_mappings)
     |> cast_embed(:state)
     |> validate_aws_resource_exists(:subnets)
     |> validate_aws_resource_exists(:security_groups)
-  end
-
-  def validate_aws_resource_exists(changeset, field, options \\ []) do
-    validate_change(changeset, field, fn field_name, ids ->
-      case missing_resources(field_name, ids) do
-        [] -> []
-        missing ->
-          [{field, options[:message] || "These #{inspect(field)} do not exist: #{inspect(missing)}"}]
-      end
-    end)
-  end
-
-  defp missing_resources(:security_groups, ids) do
-    Enum.reject(ids, fn id ->
-      case SecurityGroups.get(id: id) do
-        {:ok, _} -> true
-        _ -> false
-      end
-    end)
-  end
-
-  defp missing_resources(:subnets, ids) do
-    Enum.reject(ids, fn id ->
-      case Subnets.get(id: id) do
-        {:ok, _} -> true
-        _ -> false
-      end
-    end)
+    |> validate_inclusion(:type, ["network", "application"])
+    |> validate_inclusion(:ip_address_type, ["ipv4", "dualstack"])
+    |> validate_inclusion(:scheme, ["internal", "internet-facing"])
   end
 end

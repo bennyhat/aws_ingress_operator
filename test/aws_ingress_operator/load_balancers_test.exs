@@ -9,6 +9,7 @@ defmodule AwsIngressOperator.LoadBalancersTest do
 
   alias AwsIngressOperator.LoadBalancers
   alias AwsIngressOperator.Schemas.LoadBalancer
+  alias AwsIngressOperator.Schemas.SubnetMapping
 
   describe "list/0" do
     test "when no load balancers exist, returns empty list", %{default_aws_vpc: _vpc} do
@@ -119,6 +120,29 @@ defmodule AwsIngressOperator.LoadBalancersTest do
                })
     end
 
+    test "validates subnet mappings", %{default_aws_vpc: vpc} do
+      assert {:error, [{:subnet_mappings, _}]} =
+        LoadBalancers.create(%LoadBalancer{
+              load_balancer_name: Faker.Person.first_name(),
+              scheme: "internet-facing",
+              subnet_mappings: [
+                %SubnetMapping{
+                  allocation_id: "cannot-exist",
+                  subnet_id: vpc.subnet.id
+                },
+                %SubnetMapping{
+                  allocation_id: vpc.eip.id,
+                  subnet_id: "cannot-exist"
+                },
+                %SubnetMapping{
+                  allocation_id: vpc.eip.id,
+                  subnet_id: vpc.subnet.id
+                }
+              ],
+              security_groups: [vpc.security_group.id]
+            })
+    end
+
     test "validates security groups", %{default_aws_vpc: vpc} do
       assert {:error, [{:security_groups, _}]} =
         LoadBalancers.create(%LoadBalancer{
@@ -129,12 +153,28 @@ defmodule AwsIngressOperator.LoadBalancersTest do
             })
     end
 
-    data_test "validates #{field}" do
-      assert false
+    data_test "validates #{field}", %{default_aws_vpc: vpc} do
+      fields = Map.merge(
+        %{
+            load_balancer_name: Faker.Person.first_name(),
+            scheme: "internet-facing",
+            subnets: [vpc.subnet.id],
+            security_groups: [vpc.security_group.id]
+        },
+        %{
+          field => invalid_value
+        }
+      )
+      lb = struct(LoadBalancer, fields)
+
+      assert {:error, [{field, _}]} = LoadBalancers.create(lb)
 
       where([
         [:field, :invalid_value],
-        [:load_balancer_name, 3]
+        [:load_balancer_name, 3],
+        [:type, "cannot-be"],
+        [:scheme, "cannot-be"],
+        [:ip_address_type, "cannot-be"],
       ])
     end
   end

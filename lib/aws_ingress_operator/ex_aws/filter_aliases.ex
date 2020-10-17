@@ -151,6 +151,28 @@ defmodule AwsIngressOperator.ExAws.FilterAliases do
         name: :filter,
         list: true
       }
+    },
+    describe_addresses: %{
+      ids: %{
+        name: :allocation_id,
+        list: true
+      },
+      id: %{
+        name: :allocation_id,
+        list: true
+      },
+      allocation_ids: %{
+        name: :allocation_id,
+        list: true
+      },
+      allocation_id: %{
+        name: :allocation_id,
+        list: true
+      },
+      filter: %{
+        name: :filter,
+        list: true
+      }
     }
   }
 
