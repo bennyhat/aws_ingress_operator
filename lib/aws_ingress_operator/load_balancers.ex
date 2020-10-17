@@ -6,6 +6,8 @@ defmodule AwsIngressOperator.LoadBalancers do
   alias AwsIngressOperator.Schemas.LoadBalancer
   alias AwsIngressOperator.ExAws.Elbv2
 
+  import AwsIngressOperator.Schemas.Validations, only: [traverse_errors: 1]
+
   def list(filter \\ []) do
     load_balancers =
       Elbv2.LoadBalancer.describe_load_balancers!(filter)
@@ -27,7 +29,7 @@ defmodule AwsIngressOperator.LoadBalancers do
 
     case changeset.valid? do
       false ->
-        {:error, changeset.errors}
+        {:invalid, traverse_errors(changeset)}
 
       true ->
         %{load_balancer_arn: arn} = Elbv2.LoadBalancer.create_load_balancer!(load_balancer)

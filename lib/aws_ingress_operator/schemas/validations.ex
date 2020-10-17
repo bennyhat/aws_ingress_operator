@@ -10,8 +10,16 @@ defmodule AwsIngressOperator.Schemas.Validations do
       case missing_resources(field_name, ids) do
         [] -> []
         missing ->
-          [{field, options[:message] || "These #{inspect(field)} do not exist: #{inspect(missing)}"}]
+          [{field, options[:message] || "Field #{inspect(field)} references AWS resources that do not exist: #{Enum.join(missing, ",")}"}]
       end
+    end)
+  end
+
+  def traverse_errors(changeset) do
+    Ecto.Changeset.traverse_errors(changeset, fn {message, opts} ->
+      Regex.replace(~r"%{(\w+)}", message, fn _, key ->
+        opts |> Keyword.get(String.to_existing_atom(key), key) |> to_string()
+      end)
     end)
   end
 
@@ -46,4 +54,5 @@ defmodule AwsIngressOperator.Schemas.Validations do
       _ -> [id]
     end
   end
+
 end

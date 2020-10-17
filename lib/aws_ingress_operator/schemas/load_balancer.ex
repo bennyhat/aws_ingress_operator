@@ -167,7 +167,6 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
     |> cast(changes, @cast_fields)
     |> cast_embed(:availability_zones)
     |> cast_embed(:subnet_mappings)
-    |> IO.inspect(label: "eh?")
     |> cast_embed(:state)
     |> validate_aws_resource_exists(:subnets)
     |> validate_aws_resource_exists(:security_groups)

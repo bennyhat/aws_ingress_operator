@@ -111,7 +111,7 @@ defmodule AwsIngressOperator.LoadBalancersTest do
 
     # TODO - sad path for already existing
     test "validates subnets exist", %{default_aws_vpc: vpc} do
-      assert {:error, [{:subnets, _}]} =
+      assert {:invalid, %{subnets:  _}} =
                LoadBalancers.create(%LoadBalancer{
                  load_balancer_name: Faker.Person.first_name(),
                  scheme: "internet-facing",
@@ -121,7 +121,7 @@ defmodule AwsIngressOperator.LoadBalancersTest do
     end
 
     test "validates subnet mappings", %{default_aws_vpc: vpc} do
-      assert {:error, [{:subnet_mappings, _}]} =
+      assert {:invalid, %{subnet_mappings: [%{allocation_id: _}, %{subnet_id: _}, %{}]}} =
         LoadBalancers.create(%LoadBalancer{
               load_balancer_name: Faker.Person.first_name(),
               scheme: "internet-facing",
@@ -144,7 +144,7 @@ defmodule AwsIngressOperator.LoadBalancersTest do
     end
 
     test "validates security groups", %{default_aws_vpc: vpc} do
-      assert {:error, [{:security_groups, _}]} =
+      assert {:invalid, %{security_groups: _}} =
         LoadBalancers.create(%LoadBalancer{
               load_balancer_name: Faker.Person.first_name(),
               scheme: "internet-facing",
@@ -167,7 +167,7 @@ defmodule AwsIngressOperator.LoadBalancersTest do
       )
       lb = struct(LoadBalancer, fields)
 
-      assert {:error, [{field, _}]} = LoadBalancers.create(lb)
+      assert {:invalid, %{ ^field => _ }} = LoadBalancers.create(lb)
 
       where([
         [:field, :invalid_value],
