@@ -2,6 +2,8 @@ defmodule AwsIngressOperator.Schemas.SubnetMapping do
   use Ecto.Schema
   import Ecto.Changeset
 
+  import AwsIngressOperator.Schemas.Validations
+
   embedded_schema do
     field(:allocation_id, :string)
     field(:private_ipv4_address, :string)
@@ -17,10 +19,13 @@ defmodule AwsIngressOperator.Schemas.SubnetMapping do
   ]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def changeset(original, %_struct{} = changes), do: changeset(original, Map.from_struct(changes))
 
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
+    |> validate_aws_resource_exists(:subnet_id)
+    |> validate_aws_resource_exists(:allocation_id)
   end
 end
 
@@ -162,6 +167,7 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
     |> cast(changes, @cast_fields)
     |> cast_embed(:availability_zones)
     |> cast_embed(:subnet_mappings)
+    |> IO.inspect(label: "eh?")
     |> cast_embed(:state)
     |> validate_aws_resource_exists(:subnets)
     |> validate_aws_resource_exists(:security_groups)

@@ -12,6 +12,9 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
   use ExUnit.CaseTemplate
   import SweetXml
 
+  alias AwsIngressOperator.Addresses
+  alias AwsIngressOperator.Schemas.Address
+
   using opts do
     url = Keyword.get(opts, :url)
     quote do
@@ -27,7 +30,7 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
     reset(url)
     on_exit(fn -> reset(url) end)
 
-    {vpc_id, subnet_id, security_group_id, random_address} = default_network_details()
+    {vpc_id, subnet_id, security_group_id, elastic_ip_allocation_id, random_address} = default_network_details()
 
     [
       default_aws_vpc: %{
@@ -38,6 +41,9 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
         },
         security_group: %{
           id: security_group_id
+        },
+        eip: %{
+          id: elastic_ip_allocation_id
         }
       }
     ]
@@ -74,9 +80,13 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
         group_id: ~x"./groupId/text()"s
       )
 
+    {:ok, %Address{
+      allocation_id: elastic_ip_allocation_id
+    }} = Addresses.create(%Address{domain: "vpc"})
+
     random_address = random_address_in_block(cidr_block)
 
-    {vpc_id, subnet_id, security_group_id, random_address}
+    {vpc_id, subnet_id, security_group_id, elastic_ip_allocation_id, random_address}
   end
 
   defp random_address_in_block(cidr_block) do
