@@ -109,7 +109,25 @@ defmodule AwsIngressOperator.LoadBalancersTest do
                })
     end
 
-    # TODO - sad path for already existing
+    test "validates load balancer name is unique", %{default_aws_vpc: vpc} do
+      name = Faker.Person.first_name()
+
+      LoadBalancers.create(%LoadBalancer{
+            load_balancer_name: name,
+            scheme: "internet-facing",
+            subnets: [vpc.subnet.id],
+            security_groups: [vpc.security_group.id]
+      })
+
+      assert {:invalid, %{load_balancer_name: _}} =
+        LoadBalancers.create(%LoadBalancer{
+              load_balancer_name: name,
+              scheme: "internet-facing",
+              subnets: [vpc.subnet.id],
+              security_groups: [vpc.security_group.id]
+          })
+    end
+
     test "validates subnets exist", %{default_aws_vpc: vpc} do
       assert {:invalid, %{subnets:  _}} =
                LoadBalancers.create(%LoadBalancer{
@@ -176,6 +194,10 @@ defmodule AwsIngressOperator.LoadBalancersTest do
         [:scheme, "cannot-be"],
         [:ip_address_type, "cannot-be"],
       ])
+    end
+
+    test "does not blow up when load balancer doesn't exist" do
+      assert {:error, _} = LoadBalancers.get(name: "cannot-exist")
     end
   end
 

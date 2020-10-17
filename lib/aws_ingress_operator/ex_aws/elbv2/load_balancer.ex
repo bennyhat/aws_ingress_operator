@@ -18,8 +18,10 @@ defmodule AwsIngressOperator.ExAws.Elbv2.LoadBalancer do
         load_balancers || []
     end
 
-    make_request(aliased_filters, action, return_load_balancers)
-    |> ExAws.request!()
+    case make_request(aliased_filters, action, return_load_balancers) |> ExAws.request() do
+      {:ok, lbs} -> lbs
+      {:error, _} -> []
+    end
   end
 
   def create_load_balancer!(load_balancer) do

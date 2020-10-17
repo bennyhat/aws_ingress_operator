@@ -6,7 +6,7 @@ defmodule AwsIngressOperator.LoadBalancers do
   alias AwsIngressOperator.Schemas.LoadBalancer
   alias AwsIngressOperator.ExAws.Elbv2
 
-  import AwsIngressOperator.Schemas.Validations, only: [traverse_errors: 1]
+  import AwsIngressOperator.Schemas.Validations
 
   def list(filter \\ []) do
     load_balancers =
@@ -26,6 +26,7 @@ defmodule AwsIngressOperator.LoadBalancers do
 
   def create(load_balancer) do
     changeset = LoadBalancer.changeset(load_balancer)
+    |> validate_aws_resource_missing(:load_balancer_name)
 
     case changeset.valid? do
       false ->

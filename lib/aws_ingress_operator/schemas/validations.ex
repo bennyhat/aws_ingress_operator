@@ -2,6 +2,7 @@ defmodule AwsIngressOperator.Schemas.Validations do
   import Ecto.Changeset
 
   alias AwsIngressOperator.Addresses
+  alias AwsIngressOperator.LoadBalancers
   alias AwsIngressOperator.SecurityGroups
   alias AwsIngressOperator.Subnets
 
@@ -11,6 +12,15 @@ defmodule AwsIngressOperator.Schemas.Validations do
         [] -> []
         missing ->
           [{field, options[:message] || "Field #{inspect(field)} references AWS resources that do not exist: #{Enum.join(missing, ",")}"}]
+      end
+    end)
+  end
+
+  def validate_aws_resource_missing(changeset, field, options \\ []) do
+    validate_change(changeset, field, fn field_name, ids ->
+      case missing_resources(field_name, ids) do
+        [] -> [{field, options[:message] || "Field #{inspect(field)} references AWS resources that already exist: #{Enum.join(List.wrap(ids), ",")}"}]
+        _ -> []
       end
     end)
   end
@@ -55,4 +65,10 @@ defmodule AwsIngressOperator.Schemas.Validations do
     end
   end
 
+  defp missing_resources(:load_balancer_name, name) do
+    case LoadBalancers.get(name: name) do
+      {:ok, _} -> []
+      _ -> [name]
+    end
+  end
 end
