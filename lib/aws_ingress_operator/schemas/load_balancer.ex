@@ -19,11 +19,15 @@ defmodule AwsIngressOperator.Schemas.SubnetMapping do
   ]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-  def changeset(original, %_struct{} = changes), do: changeset(original, Map.from_struct(changes))
+  def changeset(original, %_struct{} = changes), do: write_changeset(original, Map.from_struct(changes))
 
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
+  end
+
+  def write_changeset(original, changes) do
+    changeset(original, changes)
     |> validate_aws_resource_exists(:subnet_id)
     |> validate_aws_resource_exists(:allocation_id)
   end
@@ -117,6 +121,8 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
   use Ecto.Schema
   import Ecto.Changeset
 
+  import AwsIngressOperator.Schemas.Validations
+
   alias AwsIngressOperator.Schemas.AvailabilityZone
   alias AwsIngressOperator.Schemas.Listener
   alias AwsIngressOperator.Schemas.State
@@ -158,7 +164,7 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-  def changeset(original, %_struct{} = changes), do: changeset(original, Map.from_struct(changes))
+  def changeset(original, %_struct{} = changes), do: write_changeset(original, Map.from_struct(changes))
 
   def changeset(original, changes) do
     original
@@ -166,8 +172,15 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
     |> cast_embed(:availability_zones)
     |> cast_embed(:subnet_mappings)
     |> cast_embed(:state)
+  end
+
+  def write_changeset(original, changes) do
+    changeset(original, changes)
     |> validate_inclusion(:type, ["network", "application"])
     |> validate_inclusion(:ip_address_type, ["ipv4", "dualstack"])
     |> validate_inclusion(:scheme, ["internal", "internet-facing"])
+    |> validate_aws_resource_missing(:load_balancer_name)
+    |> validate_aws_resource_exists(:subnets)
+    |> validate_aws_resource_exists(:security_groups)
   end
 end
