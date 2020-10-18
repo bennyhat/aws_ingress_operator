@@ -2,6 +2,8 @@ defmodule AwsIngressOperator.Schemas.Certificate do
   use Ecto.Schema
   import Ecto.Changeset
 
+  import AwsIngressOperator.Schemas.Validations
+
   @primary_key {:certificate_arn, :string, autogenerate: false}
   embedded_schema do
     field(:is_default, :boolean)
@@ -25,6 +27,7 @@ defmodule AwsIngressOperator.Schemas.Certificate do
 
   def write_changeset(original, changes) do
     changeset(original, changes)
+    |> validate_aws_resource_exists(:certificate_arn)
   end
 end
 
@@ -229,6 +232,8 @@ defmodule AwsIngressOperator.Schemas.Action do
   alias AwsIngressOperator.Schemas.Action.ForwardConfig
   alias AwsIngressOperator.Schemas.Action.RedirectConfig
 
+  import AwsIngressOperator.Schemas.Validations
+
   embedded_schema do
     field(:order, :integer)
     field(:target_group_arn, :string)
@@ -251,11 +256,16 @@ defmodule AwsIngressOperator.Schemas.Action do
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
   def changeset(original, %_struct{} = changes),
-    do: changeset(original, Map.from_struct(changes))
+    do: write_changeset(original, Map.from_struct(changes))
 
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
+  end
+
+  def write_changeset(original, changes) do
+    changeset(original, changes)
+    |> validate_aws_resource_exists(:target_group_arn)
   end
 end
 
@@ -304,5 +314,6 @@ defmodule AwsIngressOperator.Schemas.Listener do
     changeset(original, changes)
     |> validate_inclusion(:port, 1..65535)
     |> validate_inclusion(:protocol, protocols())
+    |> validate_aws_resource_exists(:load_balancer_arn)
   end
 end

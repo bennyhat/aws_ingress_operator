@@ -2,6 +2,7 @@ defmodule AwsIngressOperator.Schemas.Validations do
   import Ecto.Changeset
 
   alias AwsIngressOperator.Addresses
+  alias AwsIngressOperator.Certificates
   alias AwsIngressOperator.LoadBalancers
   alias AwsIngressOperator.SecurityGroups
   alias AwsIngressOperator.Subnets
@@ -69,6 +70,13 @@ defmodule AwsIngressOperator.Schemas.Validations do
     end)
   end
 
+  defp missing_resources(:certificate_arn, arn) do
+    case Certificates.get(arn: arn) do
+      {:ok, _} -> []
+      _ -> [arn]
+    end
+  end
+
   defp missing_resources(:subnet_id, id) do
     case Subnets.get(id: id) do
       {:ok, _} -> []
@@ -90,10 +98,24 @@ defmodule AwsIngressOperator.Schemas.Validations do
     end
   end
 
+  defp missing_resources(:load_balancer_arn, arn) do
+    case LoadBalancers.get(arn: arn) do
+      {:ok, _} -> []
+      _ -> [arn]
+    end
+  end
+
   defp missing_resources(:target_group_name, name) do
     case TargetGroups.get(name: name) do
       {:ok, _} -> []
       _ -> [name]
+    end
+  end
+
+  defp missing_resources(:target_group_arn, arn) do
+    case TargetGroups.get(arn: arn) do
+      {:ok, _} -> []
+      _ -> [arn]
     end
   end
 

@@ -123,6 +123,8 @@ defmodule AwsIngressOperator.ListenersTest do
                })
     end
 
+    # TODO - validate actions
+
     test "validates certificates exist", %{default_aws_vpc: vpc} do
       {lb_arn, _name} = create_load_balancer!(vpc)
       {tg_arn, _name} = create_target_group!(vpc)
@@ -131,7 +133,7 @@ defmodule AwsIngressOperator.ListenersTest do
         ExAws.ACM.request_certificate("helloworld.example.com", validation_method: "DNS")
         |> ExAws.request!()
 
-      assert {:invalid, %{load_balancer_arn: _}} =
+      assert {:invalid, %{certificates: [%{}, %{certificate_arn: _}]}} =
         Listeners.insert_or_update(%Listener{
               load_balancer_arn: lb_arn,
               protocol: "HTTPS",
@@ -173,8 +175,9 @@ defmodule AwsIngressOperator.ListenersTest do
 
     test "validates target group exists", %{default_aws_vpc: vpc} do
       {lb_arn, _name} = create_load_balancer!(vpc)
+      {tg_arn, _name} = create_target_group!(vpc)
 
-      assert {:invalid, %{load_balancer_arn: _}} =
+      assert {:invalid, %{default_actions: [%{target_group_arn: _}, %{}]}} =
         Listeners.insert_or_update(%Listener{
               load_balancer_arn: lb_arn,
               protocol: "HTTP",
@@ -183,6 +186,10 @@ defmodule AwsIngressOperator.ListenersTest do
                 %Action{
                   type: "forward",
                   target_group_arn: "cannot-exist"
+                },
+                %Action{
+                  type: "forward",
+                  target_group_arn: tg_arn
                 }
               ]
         })
