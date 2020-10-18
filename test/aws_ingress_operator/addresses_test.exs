@@ -25,7 +25,7 @@ defmodule AwsIngressOperator.AddressesTest do
 
       assert {:ok, addresses} = Addresses.list(filter: [%{name: "domain", value: "vpc"}])
 
-      assert 3 == length(addresses)
+      assert 2 == length(addresses)
     end
   end
 

@@ -123,7 +123,7 @@ defmodule AwsIngressOperator.TargetGroupsTest do
                 healthy_threshold_count: 3,
                 unhealthy_threshold_count: 4,
                 matcher: %Matcher{
-                  http_code: "200"
+                  http_code: "200,202-299"
                 }
               }} =
                TargetGroups.insert_or_update(%TargetGroup{
@@ -137,10 +137,21 @@ defmodule AwsIngressOperator.TargetGroupsTest do
                  healthy_threshold_count: 3,
                  unhealthy_threshold_count: 4,
                  matcher: %Matcher{
-                   http_code: "200"
+                   http_code: "200,202-299"
                  }
                })
     end
+
+    # test "validates matcher", %{default_aws_vpc: vpc} do
+    #   assert {:invalid, %{matcher: _}} =
+    #     TargetGroups.create(%TargetGroup{
+    #           target_group_name: Faker.Person.first_name(),
+    #           vpc_id: vpc.id,
+    #           matcher: %Matcher{
+                
+    #           }
+    #     })
+    # end
 
     data_test "validates #{field}", %{default_aws_vpc: vpc} do
       fields = Map.merge(
@@ -172,7 +183,10 @@ defmodule AwsIngressOperator.TargetGroupsTest do
         [:protocol, "not HTTP, TCP etc."],
         [:target_type, "not instance, ip or lambda"],
         [:unhealthy_threshold_count, 1],
-        [:unhealthy_threshold_count, 11]
+        [:unhealthy_threshold_count, 11],
+        [:matcher, %Matcher{http_code: "199"}],
+        [:matcher, %Matcher{http_code: "500"}],
+        [:matcher, %Matcher{http_code: "200/300"}]
       ])
     end
   end

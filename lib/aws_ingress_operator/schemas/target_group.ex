@@ -50,6 +50,7 @@ defmodule AwsIngressOperator.Schemas.Matcher do
   use Ecto.Schema
   import Ecto.Changeset
 
+  @primary_key false
   embedded_schema do
     field(:http_code, :string)
   end
@@ -61,12 +62,50 @@ defmodule AwsIngressOperator.Schemas.Matcher do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def changeset(original, %_struct{} = changes), do: write_changeset(original, Map.from_struct(changes))
 
   def changeset(original, changes) do
     changes = Map.update(changes, :http_code, nil, &to_string/1)
 
     original
     |> cast(changes, @cast_fields)
+  end
+
+  def write_changeset(original, changes) do
+    changeset(original, changes)
+    |> validate_code_interval(:http_code)
+  end
+
+  def validate_code_interval(changeset, field, options \\ []) do
+    validate_change(changeset, field, fn _field_name, code_string ->
+      case invalid_codes(code_string) do
+        [] -> []
+        invalid -> [{field, options[:message] || "Field #{inspect(field)} has codes that are not in the range of 200-499: #{Enum.join(invalid, ",")}"}]
+      end
+    end)
+  end
+
+  defp invalid_codes(code_string) do
+    String.split(code_string, ",")
+    |> Enum.map(fn range ->
+      with [x, y] <- String.split(range, "-"),
+        {x_int, ""} <- Integer.parse(x),
+        {y_int, ""} <- Integer.parse(y) do
+        Range.new(x_int, y_int)
+        |> Enum.to_list()
+      else
+        _ -> range
+      end
+    end)
+    |> List.flatten()
+    |> Enum.reject(fn
+      code when is_binary(code) ->
+        case Integer.parse(code) do
+          {int, ""} -> int in 200..499
+          _ -> false
+        end
+      code -> code in 200..499
+    end)
   end
 end
 

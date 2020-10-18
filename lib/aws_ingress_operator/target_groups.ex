@@ -49,9 +49,17 @@ defmodule AwsIngressOperator.TargetGroups do
   end
 
   defp update(existing_target_group, target_group) do
-    Elbv2.TargetGroup.modify_target_group!(target_group)
+    changeset = TargetGroup.changeset(target_group)
 
-    get(arn: existing_target_group.target_group_arn)
+    case changeset.valid? do
+      false ->
+        {:invalid, traverse_errors(changeset)}
+
+      true ->
+        Elbv2.TargetGroup.modify_target_group!(target_group)
+
+        get(arn: existing_target_group.target_group_arn)
+    end
   end
 
   def delete(target_group) do
