@@ -160,33 +160,41 @@ defmodule AwsIngressOperator.TargetGroupsTest do
           vpc_id: vpc.id
         },
         %{
-          field => invalid_value
+          field => value
         }
       )
-      tg = struct(TargetGroup, fields)
+      result = struct(TargetGroup, fields)
+      |> TargetGroups.insert_or_update()
 
-      assert {:invalid, %{ ^field => _ }} = TargetGroups.insert_or_update(tg)
+      if valid? do
+        assert {:ok, _} = result
+      else
+        assert {:invalid, %{ ^field => _ }} = result
+      end
 
       where([
-        [:field, :invalid_value],
-        [:health_check_interval_seconds, 4],
-        [:health_check_interval_seconds, 301],
-        [:health_check_path, random_string(1025)],
-        [:health_check_enabled, "a string"],
-        [:health_check_protocol, "not HTTP, TCP etc."],
-        [:health_check_timeout_seconds, 1],
-        [:health_check_timeout_seconds, 121],
-        [:healthy_threshold_count, 1],
-        [:healthy_threshold_count, 11],
-        [:port, 0],
-        [:port, 65536],
-        [:protocol, "not HTTP, TCP etc."],
-        [:target_type, "not instance, ip or lambda"],
-        [:unhealthy_threshold_count, 1],
-        [:unhealthy_threshold_count, 11],
-        [:matcher, %Matcher{http_code: "199"}],
-        [:matcher, %Matcher{http_code: "500"}],
-        [:matcher, %Matcher{http_code: "200/300"}]
+        [:field, :value, :valid?],
+        [:health_check_interval_seconds, 4, false],
+        [:health_check_interval_seconds, 301, false],
+        [:health_check_path, random_string(1025), false],
+        [:health_check_enabled, "a string", false],
+        [:health_check_protocol, "not HTTP, TCP etc.", false],
+        [:health_check_timeout_seconds, 1, false],
+        [:health_check_timeout_seconds, 121, false],
+        [:healthy_threshold_count, 1, false],
+        [:healthy_threshold_count, 11, false],
+        [:port, 0, false],
+        [:port, 65536, false],
+        [:protocol, "not HTTP, TCP etc.", false],
+        [:target_type, "not instance, ip or lambda", false],
+        [:unhealthy_threshold_count, 1, false],
+        [:unhealthy_threshold_count, 11, false],
+        [:matcher, %Matcher{http_code: "199"}, false],
+        [:matcher, %Matcher{http_code: "100,200-499"}, false],
+        [:matcher, %Matcher{http_code: "500"}, false],
+        [:matcher, %Matcher{http_code: "200/300"}, false],
+        [:matcher, %Matcher{http_code: "200-499"}, true],
+        [:matcher, %Matcher{http_code: "201,205,300-499"}, true],
       ])
     end
   end
