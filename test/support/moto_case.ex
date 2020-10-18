@@ -13,10 +13,12 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
   import SweetXml
 
   alias AwsIngressOperator.Addresses
+  alias AwsIngressOperator.Listeners
   alias AwsIngressOperator.LoadBalancers
   alias AwsIngressOperator.TargetGroups
 
   alias AwsIngressOperator.Schemas.Address
+  alias AwsIngressOperator.Schemas.Listener
   alias AwsIngressOperator.Schemas.LoadBalancer
   alias AwsIngressOperator.Schemas.TargetGroup
 
@@ -144,5 +146,16 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
     )
 
     {arn, name}
+  end
+
+  def create_listener!(lb_arn, tg_arn) do
+    {:ok, %{listener_arn: arn}} =
+      Listeners.insert_or_update(%Listener{
+            load_balancer_arn: lb_arn,
+            protocol: "HTTP",
+            port: 80,
+            default_actions: [%{type: "forward", target_group_arn: tg_arn}]
+                                 })
+    arn
   end
 end
