@@ -92,13 +92,14 @@ defmodule AwsIngressOperator.Schemas.Matcher do
         {x_int, ""} <- Integer.parse(x),
         {y_int, ""} <- Integer.parse(y) do
         Range.new(x_int, y_int)
-        |> Enum.to_list()
       else
         _ -> range
       end
     end)
     |> List.flatten()
     |> Enum.reject(fn
+      x..y ->
+        x in 200..499 and y in 200..499
       code when is_binary(code) ->
         case Integer.parse(code) do
           {int, ""} -> int in 200..499
