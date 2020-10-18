@@ -5,7 +5,7 @@ defmodule AwsIngressOperator.TargetGroups do
   alias AwsIngressOperator.Schemas.TargetGroup
   alias AwsIngressOperator.ExAws.Elbv2
 
-  import AwsIngressOperator.Schemas.Validations, only: [traverse_errors: 1]
+  import AwsIngressOperator.Schemas.Validations
 
   def list(filter \\ []) do
     tgs =
@@ -36,6 +36,7 @@ defmodule AwsIngressOperator.TargetGroups do
 
   defp insert(target_group) do
     changeset = TargetGroup.changeset(target_group)
+    |> validate_aws_resource_missing(:target_group_name)
 
     case changeset.valid? do
       false ->

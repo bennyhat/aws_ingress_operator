@@ -5,6 +5,7 @@ defmodule AwsIngressOperator.Schemas.Validations do
   alias AwsIngressOperator.LoadBalancers
   alias AwsIngressOperator.SecurityGroups
   alias AwsIngressOperator.Subnets
+  alias AwsIngressOperator.TargetGroups
 
   def validate_aws_resource_exists(changeset, field, options \\ []) do
     validate_change(changeset, field, fn field_name, ids ->
@@ -69,6 +70,21 @@ defmodule AwsIngressOperator.Schemas.Validations do
     case LoadBalancers.get(name: name) do
       {:ok, _} -> []
       _ -> [name]
+    end
+  end
+
+  defp missing_resources(:target_group_name, name) do
+    case TargetGroups.get(name: name) do
+      {:ok, _} -> []
+      _ -> [name]
+    end
+  end
+
+  defp missing_resources(:vpc_id, id) do
+    query = ExAws.EC2.describe_vpcs(vpc_ids: [id])
+    case ExAws.request(query) do
+      {:ok, _} -> []
+      _ -> [id]
     end
   end
 end

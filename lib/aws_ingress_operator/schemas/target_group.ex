@@ -115,6 +115,7 @@ defmodule AwsIngressOperator.Schemas.TargetGroup do
   import Ecto.Changeset
 
   alias AwsIngressOperator.Schemas.Matcher
+  import AwsIngressOperator.Schemas.Validations
 
   @primary_key {:target_group_arn, :string, autogenerate: false}
   embedded_schema do
@@ -188,5 +189,6 @@ defmodule AwsIngressOperator.Schemas.TargetGroup do
     |> validate_inclusion(:protocol, @protocols)
     |> validate_inclusion(:target_type, ["instance", "ip", "lambda"])
     |> validate_inclusion(:unhealthy_threshold_count, 2..10)
+    |> validate_aws_resource_exists(:vpc_id)
   end
 end

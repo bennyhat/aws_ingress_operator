@@ -142,16 +142,23 @@ defmodule AwsIngressOperator.TargetGroupsTest do
                })
     end
 
-    # test "validates matcher", %{default_aws_vpc: vpc} do
-    #   assert {:invalid, %{matcher: _}} =
-    #     TargetGroups.create(%TargetGroup{
-    #           target_group_name: Faker.Person.first_name(),
-    #           vpc_id: vpc.id,
-    #           matcher: %Matcher{
-                
-    #           }
-    #     })
-    # end
+    test "validates name is unique on insert", %{default_aws_vpc: vpc} do
+      {_arn, same_name} = create_target_group!(vpc)
+
+      assert {:invalid, %{target_group_name: _}} =
+        TargetGroups.insert_or_update(%TargetGroup{
+          target_group_name: same_name,
+          vpc_id: vpc.id
+        })
+    end
+
+    test "validates vpc exists" do
+      assert {:invalid, %{vpc_id: _}} =
+        TargetGroups.insert_or_update(%TargetGroup{
+          target_group_name: Faker.Person.first_name(),
+          vpc_id: "cannot-exist"
+        })
+    end
 
     data_test "validates #{field}", %{default_aws_vpc: vpc} do
       fields = Map.merge(
