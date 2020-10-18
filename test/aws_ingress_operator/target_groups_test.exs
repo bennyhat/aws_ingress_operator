@@ -5,9 +5,7 @@ defmodule AwsIngressOperator.TargetGroupsTest do
 
   alias AwsIngressOperator.TargetGroups
   alias AwsIngressOperator.Listeners
-  alias AwsIngressOperator.LoadBalancers
   alias AwsIngressOperator.Schemas.Listener
-  alias AwsIngressOperator.Schemas.LoadBalancer
   alias AwsIngressOperator.Schemas.Matcher
   alias AwsIngressOperator.Schemas.TargetGroup
 
@@ -17,23 +15,14 @@ defmodule AwsIngressOperator.TargetGroupsTest do
     end
 
     test "given some target groups, returns list of them", %{default_aws_vpc: vpc} do
-      name = Faker.Person.first_name()
-
-      TargetGroups.insert_or_update(%TargetGroup{target_group_name: name, vpc_id: vpc.id})
+      {_arn, name} = create_target_group!(vpc)
 
       assert {:ok, [%TargetGroup{target_group_name: ^name}]} = TargetGroups.list()
     end
 
     test "given some target groups, returns list of them by arn", %{default_aws_vpc: vpc} do
-      name = Faker.Person.first_name()
-
-      {:ok, %TargetGroup{target_group_arn: arn}} =
-        TargetGroups.insert_or_update(%TargetGroup{target_group_name: name, vpc_id: vpc.id})
-
-      TargetGroups.insert_or_update(%TargetGroup{
-        target_group_name: Faker.Person.first_name(),
-        vpc_id: vpc.id
-      })
+      {arn, _name} = create_target_group!(vpc)
+      create_target_group!(vpc)
 
       assert {:ok,
               [
@@ -44,14 +33,8 @@ defmodule AwsIngressOperator.TargetGroupsTest do
     end
 
     test "given some target groups, returns list of them by name", %{default_aws_vpc: vpc} do
-      name = Faker.Person.first_name()
-
-      TargetGroups.insert_or_update(%TargetGroup{target_group_name: name, vpc_id: vpc.id})
-
-      TargetGroups.insert_or_update(%TargetGroup{
-        target_group_name: Faker.Person.first_name(),
-        vpc_id: vpc.id
-      })
+      {_arn, name} = create_target_group!(vpc)
+      create_target_group!(vpc)
 
       assert {:ok,
               [
@@ -64,24 +47,9 @@ defmodule AwsIngressOperator.TargetGroupsTest do
     test "given some target groups, returns list of them by load balancer arn", %{
       default_aws_vpc: vpc
     } do
-      {:ok, %LoadBalancer{load_balancer_arn: lb_arn}} =
-        LoadBalancers.create(%LoadBalancer{
-          load_balancer_name: Faker.Person.name(),
-          scheme: "internet-facing",
-          subnets: [vpc.subnet.id],
-          security_groups: [vpc.security_group.id]
-        })
-
-      {:ok, %TargetGroup{target_group_arn: tg_arn}} =
-        TargetGroups.insert_or_update(%TargetGroup{
-          target_group_name: Faker.Person.first_name(),
-          vpc_id: vpc.id
-        })
-
-      TargetGroups.insert_or_update(%TargetGroup{
-        target_group_name: Faker.Person.first_name(),
-        vpc_id: vpc.id
-      })
+      {lb_arn, _name} = create_load_balancer!(vpc)
+      {tg_arn, _name} = create_target_group!(vpc)
+      create_target_group!(vpc)
 
       Listeners.insert_or_update(%Listener{
         load_balancer_arn: lb_arn,
@@ -101,29 +69,15 @@ defmodule AwsIngressOperator.TargetGroupsTest do
 
   describe "get/1" do
     test "given some target groups, returns one by arn", %{default_aws_vpc: vpc} do
-      TargetGroups.insert_or_update(%TargetGroup{
-        target_group_name: Faker.Person.first_name(),
-        vpc_id: vpc.id
-      })
-
-      {:ok, %TargetGroup{target_group_arn: arn}} =
-        TargetGroups.insert_or_update(%TargetGroup{
-          target_group_name: Faker.Person.first_name(),
-          vpc_id: vpc.id
-        })
+      create_target_group!(vpc)
+      {arn, _name} = create_target_group!(vpc)
 
       assert {:ok, %TargetGroup{target_group_arn: ^arn}} = TargetGroups.get(arn: arn)
     end
 
     test "given some target groups, returns one by name", %{default_aws_vpc: vpc} do
-      TargetGroups.insert_or_update(%TargetGroup{
-        target_group_name: Faker.Person.first_name(),
-        vpc_id: vpc.id
-      })
-
-      name = Faker.Person.first_name()
-
-      TargetGroups.insert_or_update(%TargetGroup{target_group_name: name, vpc_id: vpc.id})
+      create_target_group!(vpc)
+      {_arn, name} = create_target_group!(vpc)
 
       assert {:ok, %TargetGroup{target_group_name: ^name}} = TargetGroups.get(name: name)
     end
@@ -193,11 +147,7 @@ defmodule AwsIngressOperator.TargetGroupsTest do
 
   describe "delete/1" do
     test "given a target group that exists, deletes it", %{default_aws_vpc: vpc} do
-      {:ok, %TargetGroup{target_group_arn: arn}} =
-        TargetGroups.insert_or_update(%TargetGroup{
-          target_group_name: Faker.Person.first_name(),
-          vpc_id: vpc.id
-        })
+      {arn, _name} = create_target_group!(vpc)
 
       assert :ok =
                TargetGroups.delete(%TargetGroup{

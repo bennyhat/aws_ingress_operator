@@ -209,16 +209,4 @@ defmodule AwsIngressOperator.LoadBalancersTest do
       assert {:ok, []} == LoadBalancers.list()
     end
   end
-
-  defp create_load_balancer!(vpc) do
-    {:ok, %LoadBalancer{load_balancer_arn: arn, load_balancer_name: name}} =
-      LoadBalancers.create(%LoadBalancer{
-        load_balancer_name: Faker.Person.first_name(),
-        scheme: "internal",
-        subnets: [vpc.subnet.id],
-        security_groups: [vpc.security_group.id]
-      })
-
-    {arn, name}
-  end
 end

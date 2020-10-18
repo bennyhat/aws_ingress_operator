@@ -13,7 +13,12 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
   import SweetXml
 
   alias AwsIngressOperator.Addresses
+  alias AwsIngressOperator.LoadBalancers
+  alias AwsIngressOperator.TargetGroups
+
   alias AwsIngressOperator.Schemas.Address
+  alias AwsIngressOperator.Schemas.LoadBalancer
+  alias AwsIngressOperator.Schemas.TargetGroup
 
   using opts do
     url = Keyword.get(opts, :url)
@@ -114,5 +119,30 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
 
   def reset(url) do
     Tesla.post("#{url}/moto-api/reset", "")
+  end
+
+  def create_load_balancer!(vpc) do
+    {:ok, %LoadBalancer{load_balancer_arn: arn, load_balancer_name: name}} =
+      LoadBalancers.create(%LoadBalancer{
+            load_balancer_name: Faker.Person.first_name(),
+            scheme: "internal",
+            subnets: [vpc.subnet.id],
+            security_groups: [vpc.security_group.id]
+                           })
+
+    {arn, name}
+  end
+
+  def create_target_group!(vpc) do
+    name = Faker.Person.first_name()
+
+    {:ok, %TargetGroup{target_group_arn: arn}} = TargetGroups.insert_or_update(
+      %TargetGroup{
+        target_group_name: name,
+        vpc_id: vpc.id
+      }
+    )
+
+    {arn, name}
   end
 end
