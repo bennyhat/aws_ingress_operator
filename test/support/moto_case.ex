@@ -24,6 +24,7 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
 
   using opts do
     url = Keyword.get(opts, :url)
+
     quote do
       import AwsIngressOperator.Test.Support.MotoCase
 
@@ -37,7 +38,8 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
     reset(url)
     on_exit(fn -> reset(url) end)
 
-    {vpc_id, subnet_id, security_group_id, elastic_ip_allocation_id, random_address} = default_network_details()
+    {vpc_id, subnet_id, security_group_id, elastic_ip_allocation_id, random_address} =
+      default_network_details()
 
     [
       default_aws_vpc: %{
@@ -87,9 +89,10 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
         group_id: ~x"./groupId/text()"s
       )
 
-    {:ok, %Address{
-      allocation_id: elastic_ip_allocation_id
-    }} = Addresses.create(%Address{domain: "vpc"})
+    {:ok,
+     %Address{
+       allocation_id: elastic_ip_allocation_id
+     }} = Addresses.create(%Address{domain: "vpc"})
 
     random_address = random_address_in_block(cidr_block)
 
@@ -126,11 +129,11 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
   def create_load_balancer!(vpc) do
     {:ok, %LoadBalancer{load_balancer_arn: arn, load_balancer_name: name}} =
       LoadBalancers.create(%LoadBalancer{
-            load_balancer_name: Faker.Person.first_name(),
-            scheme: "internal",
-            subnets: [vpc.subnet.id],
-            security_groups: [vpc.security_group.id]
-                           })
+        load_balancer_name: Faker.Person.first_name(),
+        scheme: "internal",
+        subnets: [vpc.subnet.id],
+        security_groups: [vpc.security_group.id]
+      })
 
     {arn, name}
   end
@@ -138,12 +141,11 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
   def create_target_group!(vpc) do
     name = Faker.Person.first_name()
 
-    {:ok, %TargetGroup{target_group_arn: arn}} = TargetGroups.insert_or_update(
-      %TargetGroup{
+    {:ok, %TargetGroup{target_group_arn: arn}} =
+      TargetGroups.insert_or_update(%TargetGroup{
         target_group_name: name,
         vpc_id: vpc.id
-      }
-    )
+      })
 
     {arn, name}
   end
@@ -151,11 +153,12 @@ defmodule AwsIngressOperator.Test.Support.MotoCase do
   def create_listener!(lb_arn, tg_arn) do
     {:ok, %{listener_arn: arn}} =
       Listeners.insert_or_update(%Listener{
-            load_balancer_arn: lb_arn,
-            protocol: "HTTP",
-            port: 80,
-            default_actions: [%{type: "forward", target_group_arn: tg_arn}]
-                                 })
+        load_balancer_arn: lb_arn,
+        protocol: "HTTP",
+        port: 80,
+        default_actions: [%{type: "forward", target_group_arn: tg_arn}]
+      })
+
     arn
   end
 end

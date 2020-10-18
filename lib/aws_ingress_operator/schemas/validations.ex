@@ -10,9 +10,17 @@ defmodule AwsIngressOperator.Schemas.Validations do
   def validate_aws_resource_exists(changeset, field, options \\ []) do
     validate_change(changeset, field, fn field_name, ids ->
       case missing_resources(field_name, ids) do
-        [] -> []
+        [] ->
+          []
+
         missing ->
-          [{field, options[:message] || "Field #{inspect(field)} references AWS resources that do not exist: #{Enum.join(missing, ",")}"}]
+          [
+            {field,
+             options[:message] ||
+               "Field #{inspect(field)} references AWS resources that do not exist: #{
+                 Enum.join(missing, ",")
+               }"}
+          ]
       end
     end)
   end
@@ -20,8 +28,17 @@ defmodule AwsIngressOperator.Schemas.Validations do
   def validate_aws_resource_missing(changeset, field, options \\ []) do
     validate_change(changeset, field, fn field_name, ids ->
       case missing_resources(field_name, ids) do
-        [] -> [{field, options[:message] || "Field #{inspect(field)} references AWS resources that already exist: #{Enum.join(List.wrap(ids), ",")}"}]
-        _ -> []
+        [] ->
+          [
+            {field,
+             options[:message] ||
+               "Field #{inspect(field)} references AWS resources that already exist: #{
+                 Enum.join(List.wrap(ids), ",")
+               }"}
+          ]
+
+        _ ->
+          []
       end
     end)
   end
@@ -82,9 +99,21 @@ defmodule AwsIngressOperator.Schemas.Validations do
 
   defp missing_resources(:vpc_id, id) do
     query = ExAws.EC2.describe_vpcs(vpc_ids: [id])
+
     case ExAws.request(query) do
       {:ok, _} -> []
       _ -> [id]
     end
+  end
+
+  defmacro protocols() do
+    [
+      "HTTP",
+      "HTTPS",
+      "TCP",
+      "TLS",
+      "UDP",
+      "TCP_UDP"
+    ]
   end
 end

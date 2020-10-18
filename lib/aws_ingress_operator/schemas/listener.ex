@@ -15,10 +15,16 @@ defmodule AwsIngressOperator.Schemas.Certificate do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def changeset(original, %_struct{} = changes),
+    do: write_changeset(original, Map.from_struct(changes))
 
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
+  end
+
+  def write_changeset(original, changes) do
+    changeset(original, changes)
   end
 end
 
@@ -244,6 +250,8 @@ defmodule AwsIngressOperator.Schemas.Action do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def changeset(original, %_struct{} = changes),
+    do: changeset(original, Map.from_struct(changes))
 
   def changeset(original, changes) do
     original
@@ -257,6 +265,8 @@ defmodule AwsIngressOperator.Schemas.Listener do
 
   alias AwsIngressOperator.Schemas.Certificate
   alias AwsIngressOperator.Schemas.Action
+
+  import AwsIngressOperator.Schemas.Validations
 
   @primary_key {:listener_arn, :string, autogenerate: false}
   embedded_schema do
@@ -280,11 +290,19 @@ defmodule AwsIngressOperator.Schemas.Listener do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
+  def changeset(original, %_struct{} = changes),
+    do: write_changeset(original, Map.from_struct(changes))
 
   def changeset(original, changes) do
     original
     |> cast(changes, @cast_fields)
     |> cast_embed(:certificates)
     |> cast_embed(:default_actions)
+  end
+
+  def write_changeset(original, changes) do
+    changeset(original, changes)
+    |> validate_inclusion(:port, 1..65535)
+    |> validate_inclusion(:protocol, protocols())
   end
 end

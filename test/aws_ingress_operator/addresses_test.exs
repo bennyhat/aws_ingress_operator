@@ -45,7 +45,8 @@ defmodule AwsIngressOperator.AddressesTest do
 
   describe "create/1" do
     test "creates a new address allocation" do
-      {:ok, %Address{allocation_id: id, public_ip: address, domain: "vpc"}} = Addresses.create(%Address{domain: "vpc"})
+      {:ok, %Address{allocation_id: id, public_ip: address, domain: "vpc"}} =
+        Addresses.create(%Address{domain: "vpc"})
 
       assert is_binary(id)
       assert is_binary(address)

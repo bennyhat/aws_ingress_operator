@@ -19,7 +19,9 @@ defmodule AwsIngressOperator.Schemas.SubnetMapping do
   ]
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-  def changeset(original, %_struct{} = changes), do: write_changeset(original, Map.from_struct(changes))
+
+  def changeset(original, %_struct{} = changes),
+    do: write_changeset(original, Map.from_struct(changes))
 
   def changeset(original, changes) do
     original
@@ -164,7 +166,9 @@ defmodule AwsIngressOperator.Schemas.LoadBalancer do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-  def changeset(original, %_struct{} = changes), do: write_changeset(original, Map.from_struct(changes))
+
+  def changeset(original, %_struct{} = changes),
+    do: write_changeset(original, Map.from_struct(changes))
 
   def changeset(original, changes) do
     original

@@ -62,7 +62,9 @@ defmodule AwsIngressOperator.Schemas.Matcher do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-  def changeset(original, %_struct{} = changes), do: write_changeset(original, Map.from_struct(changes))
+
+  def changeset(original, %_struct{} = changes),
+    do: write_changeset(original, Map.from_struct(changes))
 
   def changeset(original, changes) do
     changes = Map.update(changes, :http_code, nil, &to_string/1)
@@ -79,8 +81,17 @@ defmodule AwsIngressOperator.Schemas.Matcher do
   def validate_code_interval(changeset, field, options \\ []) do
     validate_change(changeset, field, fn _field_name, code_string ->
       case invalid_codes(code_string) do
-        [] -> []
-        invalid -> [{field, options[:message] || "Field #{inspect(field)} has codes that are not in the range of 200-499: #{Enum.join(invalid, ",")}"}]
+        [] ->
+          []
+
+        invalid ->
+          [
+            {field,
+             options[:message] ||
+               "Field #{inspect(field)} has codes that are not in the range of 200-499: #{
+                 Enum.join(invalid, ",")
+               }"}
+          ]
       end
     end)
   end
@@ -89,8 +100,8 @@ defmodule AwsIngressOperator.Schemas.Matcher do
     String.split(code_string, ",")
     |> Enum.map(fn range ->
       with [x, y] <- String.split(range, "-"),
-        {x_int, ""} <- Integer.parse(x),
-        {y_int, ""} <- Integer.parse(y) do
+           {x_int, ""} <- Integer.parse(x),
+           {y_int, ""} <- Integer.parse(y) do
         Range.new(x_int, y_int)
       else
         _ -> range
@@ -100,12 +111,15 @@ defmodule AwsIngressOperator.Schemas.Matcher do
     |> Enum.reject(fn
       x..y ->
         x in 200..499 and y in 200..499
+
       code when is_binary(code) ->
         case Integer.parse(code) do
           {int, ""} -> int in 200..499
           _ -> false
         end
-      code -> code in 200..499
+
+      code ->
+        code in 200..499
     end)
   end
 end
@@ -160,7 +174,9 @@ defmodule AwsIngressOperator.Schemas.TargetGroup do
   use Accessible
 
   def changeset(changes), do: changeset(%__MODULE__{}, changes)
-  def changeset(original, %_struct{} = changes), do: write_changeset(original, Map.from_struct(changes))
+
+  def changeset(original, %_struct{} = changes),
+    do: write_changeset(original, Map.from_struct(changes))
 
   def changeset(original, changes) do
     changes = Map.update(changes, :health_check_port, nil, &to_string/1)
@@ -170,23 +186,15 @@ defmodule AwsIngressOperator.Schemas.TargetGroup do
     |> cast_embed(:matcher)
   end
 
-  @protocols [
-    "HTTP",
-    "HTTPS",
-    "TCP",
-    "TLS",
-    "UDP",
-    "TCP_UDP"
-  ]
   def write_changeset(original, changes) do
     changeset(original, changes)
     |> validate_inclusion(:health_check_interval_seconds, 5..300)
     |> validate_length(:health_check_path, min: 1, max: 1024)
-    |> validate_inclusion(:health_check_protocol, @protocols)
+    |> validate_inclusion(:health_check_protocol, protocols())
     |> validate_inclusion(:health_check_timeout_seconds, 2..120)
     |> validate_inclusion(:healthy_threshold_count, 2..10)
-    |> validate_inclusion(:port, 1..65535)
-    |> validate_inclusion(:protocol, @protocols)
+    |> validate_inclusion(:port, protocols())
+    |> validate_inclusion(:protocol, protocols())
     |> validate_inclusion(:target_type, ["instance", "ip", "lambda"])
     |> validate_inclusion(:unhealthy_threshold_count, 2..10)
     |> validate_aws_resource_exists(:vpc_id)

@@ -1,7 +1,9 @@
 defmodule AwsIngressOperator.TargetGroupsTest do
   @moduledoc false
   use ExUnit.Case
-  use AwsIngressOperator.Test.Support.MotoCase, url: "http://localhost:5000"
+
+  use AwsIngressOperator.Test.Support.MotoCase,
+    url: "http://localhost:5000"
 
   import Checkov
 
@@ -146,37 +148,40 @@ defmodule AwsIngressOperator.TargetGroupsTest do
       {_arn, same_name} = create_target_group!(vpc)
 
       assert {:invalid, %{target_group_name: _}} =
-        TargetGroups.insert_or_update(%TargetGroup{
-          target_group_name: same_name,
-          vpc_id: vpc.id
-        })
+               TargetGroups.insert_or_update(%TargetGroup{
+                 target_group_name: same_name,
+                 vpc_id: vpc.id
+               })
     end
 
     test "validates vpc exists" do
       assert {:invalid, %{vpc_id: _}} =
-        TargetGroups.insert_or_update(%TargetGroup{
-          target_group_name: Faker.Person.first_name(),
-          vpc_id: "cannot-exist"
-        })
+               TargetGroups.insert_or_update(%TargetGroup{
+                 target_group_name: Faker.Person.first_name(),
+                 vpc_id: "cannot-exist"
+               })
     end
 
     data_test "validates #{field}", %{default_aws_vpc: vpc} do
-      fields = Map.merge(
-        %{
-          target_group_name: Faker.Person.first_name(),
-          vpc_id: vpc.id
-        },
-        %{
-          field => value
-        }
-      )
-      result = struct(TargetGroup, fields)
-      |> TargetGroups.insert_or_update()
+      fields =
+        Map.merge(
+          %{
+            target_group_name: Faker.Person.first_name(),
+            vpc_id: vpc.id
+          },
+          %{
+            field => value
+          }
+        )
+
+      result =
+        struct(TargetGroup, fields)
+        |> TargetGroups.insert_or_update()
 
       if valid? do
         assert {:ok, _} = result
       else
-        assert {:invalid, %{ ^field => _ }} = result
+        assert {:invalid, %{^field => _}} = result
       end
 
       where([
@@ -201,7 +206,7 @@ defmodule AwsIngressOperator.TargetGroupsTest do
         [:matcher, %Matcher{http_code: "500"}, false],
         [:matcher, %Matcher{http_code: "200/300"}, false],
         [:matcher, %Matcher{http_code: "200-499"}, true],
-        [:matcher, %Matcher{http_code: "201,205,300-499"}, true],
+        [:matcher, %Matcher{http_code: "201,205,300-499"}, true]
       ])
     end
   end
@@ -220,6 +225,6 @@ defmodule AwsIngressOperator.TargetGroupsTest do
   end
 
   def random_string(length) do
-    :crypto.strong_rand_bytes(length) |> Base.url_encode64 |> binary_part(0, length)
+    :crypto.strong_rand_bytes(length) |> Base.url_encode64() |> binary_part(0, length)
   end
 end

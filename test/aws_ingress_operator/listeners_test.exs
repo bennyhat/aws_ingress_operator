@@ -2,6 +2,7 @@ defmodule AwsIngressOperator.ListenersTest do
   @moduledoc false
   use ExUnit.Case
   use AwsIngressOperator.Test.Support.MotoCase, url: "http://localhost:5000"
+  import Checkov
 
   alias AwsIngressOperator.Listeners
   alias AwsIngressOperator.Schemas.Listener
@@ -120,6 +121,118 @@ defmodule AwsIngressOperator.ListenersTest do
                    }
                  ]
                })
+    end
+
+    test "validates certificates exist", %{default_aws_vpc: vpc} do
+      {lb_arn, _name} = create_load_balancer!(vpc)
+      {tg_arn, _name} = create_target_group!(vpc)
+
+      %{"CertificateArn" => certificate_arn} =
+        ExAws.ACM.request_certificate("helloworld.example.com", validation_method: "DNS")
+        |> ExAws.request!()
+
+      assert {:invalid, %{load_balancer_arn: _}} =
+        Listeners.insert_or_update(%Listener{
+              load_balancer_arn: lb_arn,
+              protocol: "HTTPS",
+              port: 443,
+              ssl_policy: "ELBSecurityPolicy-TLS-1-2-2017-01",
+              certificates: [
+                %Certificate{
+                  certificate_arn: certificate_arn
+                },
+                %Certificate{
+                  certificate_arn: "cannot-exist"
+                }
+              ],
+              default_actions: [
+                %Action{
+                  type: "forward",
+                  target_group_arn: tg_arn
+                }
+              ]
+                                   })
+    end
+
+    test "validates load balancer exists", %{default_aws_vpc: vpc} do
+      {tg_arn, _name} = create_target_group!(vpc)
+
+      assert {:invalid, %{load_balancer_arn: _}} =
+        Listeners.insert_or_update(%Listener{
+              load_balancer_arn: "cannot-exist",
+              protocol: "HTTP",
+              port: 80,
+              default_actions: [
+                %Action{
+                  type: "forward",
+                  target_group_arn: tg_arn
+                }
+              ]
+                                   })
+    end
+
+    test "validates target group exists", %{default_aws_vpc: vpc} do
+      {lb_arn, _name} = create_load_balancer!(vpc)
+
+      assert {:invalid, %{load_balancer_arn: _}} =
+        Listeners.insert_or_update(%Listener{
+              load_balancer_arn: lb_arn,
+              protocol: "HTTP",
+              port: 80,
+              default_actions: [
+                %Action{
+                  type: "forward",
+                  target_group_arn: "cannot-exist"
+                }
+              ]
+        })
+    end
+
+    data_test "validates #{field}", %{default_aws_vpc: vpc} do
+      {lb_arn, _name} = create_load_balancer!(vpc)
+      {tg_arn, _name} = create_target_group!(vpc)
+
+      fields =
+        Map.merge(
+          %{
+            load_balancer_arn: lb_arn,
+            default_actions: [
+              %Action{
+                type: "forward",
+                target_group_arn: tg_arn
+              }
+            ],
+            protocol: "HTTP",
+            port: 80
+          },
+          %{
+            field => value
+          }
+        )
+
+      result =
+        struct(Listener, fields)
+        |> Listeners.insert_or_update()
+
+      if valid? do
+        assert {:ok, _} = result
+      else
+        assert {:invalid, %{^field => _}} = result
+      end
+
+      where([
+        [:field, :value, :valid?],
+        [:port, 0, false],
+        [:port, 65536, false],
+        [:port, 65535, true],
+        [:protocol, "not HTTP, TCP, etc.", false],
+        [:protocol, "HTTP", true],
+        [:protocol, "HTTPS", true],
+        [:protocol, "TCP", true],
+        [:protocol, "TLS", true],
+        [:protocol, "UDP", true],
+        [:protocol, "TCP_UDP", true]
+      ])
     end
   end
 

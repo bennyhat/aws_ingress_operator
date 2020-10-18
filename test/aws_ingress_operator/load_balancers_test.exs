@@ -113,23 +113,23 @@ defmodule AwsIngressOperator.LoadBalancersTest do
       name = Faker.Person.first_name()
 
       LoadBalancers.create(%LoadBalancer{
-            load_balancer_name: name,
-            scheme: "internet-facing",
-            subnets: [vpc.subnet.id],
-            security_groups: [vpc.security_group.id]
+        load_balancer_name: name,
+        scheme: "internet-facing",
+        subnets: [vpc.subnet.id],
+        security_groups: [vpc.security_group.id]
       })
 
       assert {:invalid, %{load_balancer_name: _}} =
-        LoadBalancers.create(%LoadBalancer{
-              load_balancer_name: name,
-              scheme: "internet-facing",
-              subnets: [vpc.subnet.id],
-              security_groups: [vpc.security_group.id]
-          })
+               LoadBalancers.create(%LoadBalancer{
+                 load_balancer_name: name,
+                 scheme: "internet-facing",
+                 subnets: [vpc.subnet.id],
+                 security_groups: [vpc.security_group.id]
+               })
     end
 
     test "validates subnets exist", %{default_aws_vpc: vpc} do
-      assert {:invalid, %{subnets:  _}} =
+      assert {:invalid, %{subnets: _}} =
                LoadBalancers.create(%LoadBalancer{
                  load_balancer_name: Faker.Person.first_name(),
                  scheme: "internet-facing",
@@ -140,59 +140,61 @@ defmodule AwsIngressOperator.LoadBalancersTest do
 
     test "validates subnet mappings", %{default_aws_vpc: vpc} do
       assert {:invalid, %{subnet_mappings: [%{allocation_id: _}, %{subnet_id: _}, %{}]}} =
-        LoadBalancers.create(%LoadBalancer{
-              load_balancer_name: Faker.Person.first_name(),
-              scheme: "internet-facing",
-              subnet_mappings: [
-                %SubnetMapping{
-                  allocation_id: "cannot-exist",
-                  subnet_id: vpc.subnet.id
-                },
-                %SubnetMapping{
-                  allocation_id: vpc.eip.id,
-                  subnet_id: "cannot-exist"
-                },
-                %SubnetMapping{
-                  allocation_id: vpc.eip.id,
-                  subnet_id: vpc.subnet.id
-                }
-              ],
-              security_groups: [vpc.security_group.id]
-            })
+               LoadBalancers.create(%LoadBalancer{
+                 load_balancer_name: Faker.Person.first_name(),
+                 scheme: "internet-facing",
+                 subnet_mappings: [
+                   %SubnetMapping{
+                     allocation_id: "cannot-exist",
+                     subnet_id: vpc.subnet.id
+                   },
+                   %SubnetMapping{
+                     allocation_id: vpc.eip.id,
+                     subnet_id: "cannot-exist"
+                   },
+                   %SubnetMapping{
+                     allocation_id: vpc.eip.id,
+                     subnet_id: vpc.subnet.id
+                   }
+                 ],
+                 security_groups: [vpc.security_group.id]
+               })
     end
 
     test "validates security groups", %{default_aws_vpc: vpc} do
       assert {:invalid, %{security_groups: _}} =
-        LoadBalancers.create(%LoadBalancer{
-              load_balancer_name: Faker.Person.first_name(),
-              scheme: "internet-facing",
-              subnets: [vpc.subnet.id],
-              security_groups: [vpc.security_group.id, "cannot-exist"]
-            })
+               LoadBalancers.create(%LoadBalancer{
+                 load_balancer_name: Faker.Person.first_name(),
+                 scheme: "internet-facing",
+                 subnets: [vpc.subnet.id],
+                 security_groups: [vpc.security_group.id, "cannot-exist"]
+               })
     end
 
     data_test "validates #{field}", %{default_aws_vpc: vpc} do
-      fields = Map.merge(
-        %{
+      fields =
+        Map.merge(
+          %{
             load_balancer_name: Faker.Person.first_name(),
             scheme: "internet-facing",
             subnets: [vpc.subnet.id],
             security_groups: [vpc.security_group.id]
-        },
-        %{
-          field => invalid_value
-        }
-      )
+          },
+          %{
+            field => invalid_value
+          }
+        )
+
       lb = struct(LoadBalancer, fields)
 
-      assert {:invalid, %{ ^field => _ }} = LoadBalancers.create(lb)
+      assert {:invalid, %{^field => _}} = LoadBalancers.create(lb)
 
       where([
         [:field, :invalid_value],
         [:load_balancer_name, 3],
         [:type, "cannot-be"],
         [:scheme, "cannot-be"],
-        [:ip_address_type, "cannot-be"],
+        [:ip_address_type, "cannot-be"]
       ])
     end
 

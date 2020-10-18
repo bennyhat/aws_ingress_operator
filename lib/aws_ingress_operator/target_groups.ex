@@ -35,8 +35,9 @@ defmodule AwsIngressOperator.TargetGroups do
   def insert_or_update(tg), do: insert(tg)
 
   defp insert(target_group) do
-    changeset = TargetGroup.changeset(target_group)
-    |> validate_aws_resource_missing(:target_group_name)
+    changeset =
+      TargetGroup.changeset(target_group)
+      |> validate_aws_resource_missing(:target_group_name)
 
     case changeset.valid? do
       false ->

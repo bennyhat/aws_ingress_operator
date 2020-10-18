@@ -6,11 +6,11 @@ defmodule AwsIngressOperator.ExAws.EC2.Address do
 
   def describe_addresses!(filters) do
     return_addresses = fn
-    %{
-      describe_addresses_response: %{
-        addresses_set: addresses
-      }
-    } ->
+      %{
+        describe_addresses_response: %{
+          addresses_set: addresses
+        }
+      } ->
         addresses || []
     end
 
@@ -25,9 +25,9 @@ defmodule AwsIngressOperator.ExAws.EC2.Address do
 
   def allocate_address!(address) do
     return_address = fn
-    %{
-      allocate_address_response: address
-    } ->
+      %{
+        allocate_address_response: address
+      } ->
         address
     end
 

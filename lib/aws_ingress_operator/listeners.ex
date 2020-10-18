@@ -5,6 +5,8 @@ defmodule AwsIngressOperator.Listeners do
   alias AwsIngressOperator.Schemas.Listener
   alias AwsIngressOperator.ExAws.Elbv2
 
+  import AwsIngressOperator.Schemas.Validations
+
   def list(filter) do
     listeners =
       Elbv2.Listener.describe_listeners!(filter)
@@ -33,15 +35,29 @@ defmodule AwsIngressOperator.Listeners do
   def insert_or_update(listener), do: insert(listener)
 
   defp insert(listener) do
-    %{listener_arn: arn} = Elbv2.Listener.create_listener!(listener)
+    changeset = Listener.changeset(listener)
+    case changeset.valid? do
+      false ->
+        {:invalid, traverse_errors(changeset)}
 
-    get(arn: arn)
+      true ->
+        %{listener_arn: arn} = Elbv2.Listener.create_listener!(listener)
+
+        get(arn: arn)
+    end
   end
 
   defp update(existing_listener, listener) do
-    Elbv2.Listener.modify_listener!(listener)
+    changeset = Listener.changeset(listener)
+    case changeset.valid? do
+      false ->
+        {:invalid, traverse_errors(changeset)}
 
-    get(arn: existing_listener.listener_arn)
+      true ->
+        Elbv2.Listener.modify_listener!(listener)
+
+        get(arn: existing_listener.listener_arn)
+    end
   end
 
   def delete(listener) do
