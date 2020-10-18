@@ -7,8 +7,8 @@ defmodule AwsIngressOperator.AddressesTest do
   alias AwsIngressOperator.Schemas.Address
 
   describe "list/1" do
-    test "given the no addresses, returns empty list" do
-      assert {:ok, []} = Addresses.list()
+    test "given the default address created by the test case, returns it" do
+      assert {:ok, [%Address{}]} = Addresses.list()
     end
 
     test "given an address allocation, returns it by id" do
@@ -19,13 +19,13 @@ defmodule AwsIngressOperator.AddressesTest do
       assert {:ok, [%Address{allocation_id: ^id}]} = Addresses.list(allocation_id: id)
     end
 
-    test "given some addresses, returns list of them by filter" do
+    test "given some addresses, returns list of them by filter (including one created as part of moto)" do
       Addresses.create(%Address{domain: "vpc"})
       Addresses.create(%Address{domain: "vpc"})
 
       assert {:ok, addresses} = Addresses.list(filter: [%{name: "domain", value: "vpc"}])
 
-      assert 2 == length(addresses)
+      assert 3 == length(addresses)
     end
   end
 

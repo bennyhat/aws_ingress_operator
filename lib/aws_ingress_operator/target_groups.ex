@@ -5,6 +5,8 @@ defmodule AwsIngressOperator.TargetGroups do
   alias AwsIngressOperator.Schemas.TargetGroup
   alias AwsIngressOperator.ExAws.Elbv2
 
+  import AwsIngressOperator.Schemas.Validations, only: [traverse_errors: 1]
+
   def list(filter \\ []) do
     tgs =
       Elbv2.TargetGroup.describe_target_groups!(filter)
@@ -33,9 +35,17 @@ defmodule AwsIngressOperator.TargetGroups do
   def insert_or_update(tg), do: insert(tg)
 
   defp insert(target_group) do
-    %{target_group_arn: arn} = Elbv2.TargetGroup.create_target_group!(target_group)
+    changeset = TargetGroup.changeset(target_group)
 
-    get(arn: arn)
+    case changeset.valid? do
+      false ->
+        {:invalid, traverse_errors(changeset)}
+
+      true ->
+        %{target_group_arn: arn} = Elbv2.TargetGroup.create_target_group!(target_group)
+
+        get(arn: arn)
+    end
   end
 
   defp update(existing_target_group, target_group) do

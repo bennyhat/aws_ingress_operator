@@ -3,6 +3,8 @@ defmodule AwsIngressOperator.TargetGroupsTest do
   use ExUnit.Case
   use AwsIngressOperator.Test.Support.MotoCase, url: "http://localhost:5000"
 
+  import Checkov
+
   alias AwsIngressOperator.TargetGroups
   alias AwsIngressOperator.Listeners
   alias AwsIngressOperator.Schemas.Listener
@@ -106,11 +108,7 @@ defmodule AwsIngressOperator.TargetGroupsTest do
     test "given an existing target group, with an arn provided it updates the target group", %{
       default_aws_vpc: vpc
     } do
-      {:ok, %TargetGroup{target_group_arn: arn}} =
-        TargetGroups.insert_or_update(%TargetGroup{
-          target_group_name: Faker.Person.first_name(),
-          vpc_id: vpc.id
-        })
+      {arn, _name} = create_target_group!(vpc)
 
       assert {:ok,
               %TargetGroup{
@@ -143,6 +141,40 @@ defmodule AwsIngressOperator.TargetGroupsTest do
                  }
                })
     end
+
+    data_test "validates #{field}", %{default_aws_vpc: vpc} do
+      fields = Map.merge(
+        %{
+          target_group_name: Faker.Person.first_name(),
+          vpc_id: vpc.id
+        },
+        %{
+          field => invalid_value
+        }
+      )
+      tg = struct(TargetGroup, fields)
+
+      assert {:invalid, %{ ^field => _ }} = TargetGroups.insert_or_update(tg)
+
+      where([
+        [:field, :invalid_value],
+        [:health_check_interval_seconds, 4],
+        [:health_check_interval_seconds, 301],
+        [:health_check_path, random_string(1025)],
+        [:health_check_enabled, "a string"],
+        [:health_check_protocol, "not HTTP, TCP etc."],
+        [:health_check_timeout_seconds, 1],
+        [:health_check_timeout_seconds, 121],
+        [:healthy_threshold_count, 1],
+        [:healthy_threshold_count, 11],
+        [:port, 0],
+        [:port, 65536],
+        [:protocol, "not HTTP, TCP etc."],
+        [:target_type, "not instance, ip or lambda"],
+        [:unhealthy_threshold_count, 1],
+        [:unhealthy_threshold_count, 11]
+      ])
+    end
   end
 
   describe "delete/1" do
@@ -156,5 +188,9 @@ defmodule AwsIngressOperator.TargetGroupsTest do
 
       assert {:ok, []} = TargetGroups.list(target_group_arn: arn)
     end
+  end
+
+  def random_string(length) do
+    :crypto.strong_rand_bytes(length) |> Base.url_encode64 |> binary_part(0, length)
   end
 end
